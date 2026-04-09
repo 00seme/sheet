@@ -62,22 +62,23 @@ input[type=file]{display:none;}
   width:344px;height:563px;top:290px;z-index:8;
 }
 #inside-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none;}
+#inside-export-img{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none;display:none;}
 #key-img{position:absolute;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;mix-blend-mode:multiply;}
 #inside-img{display:none;}
 
 /* 하단 텍스트: 균일한 스타일 */
-#btxt{position:absolute;left:50%;top:885px;transform:translateX(-50%);width:720px;max-width:90%;z-index:10;display:flex;justify-content:center;align-items:flex-start;}
+#btxt{position:absolute;left:50%;top:885px;transform:translateX(-50%);width:720px;z-index:10;display:flex;justify-content:center;align-items:flex-start;}
 #bt-text{
   color:#fff;font-weight:700;font-size:18px;line-height:1.8;
   text-align:center;white-space:pre;word-break:normal;overflow-wrap:normal;padding:2px 8px;border-radius:2px;
-  width:100%;
+  width:auto;
 }
 
 /* 스티커 */
 #stk-layer{position:absolute;inset:0;z-index:20;pointer-events:none;}
 .stk{position:absolute;cursor:grab;user-select:none;pointer-events:auto;}
 .stk:active{cursor:grabbing;}
-.stk img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;}
+.stk img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;pointer-events:none;}
 .stk-del{position:absolute;top:-7px;right:-7px;width:18px;height:18px;background:#e55;border-radius:50%;font-size:10px;color:#fff;font-weight:700;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:22;line-height:18px;text-align:center;}
 .stk:hover .stk-del{display:flex;}
 .stk-rsz{position:absolute;bottom:-6px;right:-6px;width:13px;height:13px;background:#c8a870;border-radius:2px;cursor:se-resize;z-index:22;display:none;}
@@ -149,6 +150,7 @@ input[type=file]{display:none;}
 
   <div id="kh-wrap">
     <canvas id="inside-canvas"></canvas>
+    <img id="inside-export-img" alt="">
     <img id="inside-img" alt="">
     <img id="key-img" alt="">
   </div>
@@ -184,13 +186,25 @@ const KH_W=344, KH_H=Math.round(344*566/346);
 const insideCanvas=document.getElementById("inside-canvas");
 const insCtx=insideCanvas.getContext("2d");
 const insideImg=document.getElementById("inside-img");
+const insideExportImg=document.getElementById("inside-export-img");
 const keyImg=document.getElementById("key-img");
 insideCanvas.width=KH_W; insideCanvas.height=KH_H;
 keyImg.src="data:image/png;base64,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";
 
+function syncInsideExportImage(){
+  if(!insideImg.src||insideImg.src===location.href){
+    insideExportImg.removeAttribute("src");
+    return;
+  }
+  insideExportImg.src=insideCanvas.toDataURL("image/png");
+}
+
 function drawInsideCanvas(){
   insCtx.clearRect(0,0,KH_W,KH_H);
-  if(!insideImg.src||insideImg.src===location.href) return;
+  if(!insideImg.src||insideImg.src===location.href){
+    syncInsideExportImage();
+    return;
+  }
   const sz=parseInt(document.getElementById("isz").value);
   const ox=parseInt(document.getElementById("iox").value);
   const oy=parseInt(document.getElementById("ioy").value);
@@ -199,12 +213,11 @@ function drawInsideCanvas(){
   if(iw>=ih){dw=sz;dh=Math.round(sz*ih/iw);}
   else{dh=sz;dw=Math.round(sz*iw/ih);}
   const dx=Math.round((KH_W-dw)/2+ox), dy=Math.round((KH_H-dh)/2+oy);
-  // 1. 이미지 그리기
   insCtx.drawImage(insideImg,dx,dy,dw,dh);
-  // 2. keyImg 실루엣으로 클리핑 (destination-in: keyImg 흰색 부분만 남김)
   insCtx.globalCompositeOperation="destination-in";
   insCtx.drawImage(keyImg,0,0,KH_W,KH_H);
   insCtx.globalCompositeOperation="source-over";
+  syncInsideExportImage();
 }
 // keyImg 로드 후 바로 그리기 시도
 keyImg.onload=()=>drawInsideCanvas();
@@ -232,7 +245,15 @@ function addStk(input){
       const div=document.createElement("div");div.className="stk";
       div.style.cssText="left:300px;top:500px;width:120px;height:120px;";
       div.dataset.id=stkSeq++;
-      const img=document.createElement("img");img.src=e.target.result;
+      const img=document.createElement("img");
+      img.onload=()=>{
+        const ratio=(img.naturalWidth&&img.naturalHeight)?(img.naturalWidth/img.naturalHeight):1;
+        const baseW=120;
+        div.dataset.ratio=ratio;
+        div.style.width=baseW+"px";
+        div.style.height=Math.round(baseW/ratio)+"px";
+      };
+      img.src=e.target.result;
       const del=document.createElement("div");del.className="stk-del";del.textContent="×";
       del.onclick=ev=>{ev.stopPropagation();div.remove();};
       const rsz=document.createElement("div");rsz.className="stk-rsz";
@@ -255,9 +276,20 @@ function initDrag(el){
   document.addEventListener("mouseup",()=>{dn=false;el.style.cursor="grab";});
 }
 function initRsz(el,handle){
-  let dn=false,sx=0,sy=0,ow=0,oh=0;
-  handle.addEventListener("mousedown",e=>{dn=true;sx=e.clientX;sy=e.clientY;ow=el.offsetWidth;oh=el.offsetHeight;e.stopPropagation();e.preventDefault();});
-  document.addEventListener("mousemove",e=>{if(!dn)return;el.style.width=Math.max(20,ow+e.clientX-sx)+"px";el.style.height=Math.max(20,oh+e.clientY-sy)+"px";});
+  let dn=false,sx=0,sy=0,ow=0,oh=0,ratio=1;
+  handle.addEventListener("mousedown",e=>{
+    dn=true;sx=e.clientX;sy=e.clientY;ow=el.offsetWidth;oh=el.offsetHeight;
+    ratio=parseFloat(el.dataset.ratio)||(ow/Math.max(oh,1))||1;
+    e.stopPropagation();e.preventDefault();
+  });
+  document.addEventListener("mousemove",e=>{
+    if(!dn)return;
+    const dx=e.clientX-sx, dy=e.clientY-sy;
+    const nextW=Math.max(20,Math.round(ow+Math.max(dx,dy)));
+    const nextH=Math.max(20,Math.round(nextW/ratio));
+    el.style.width=nextW+"px";
+    el.style.height=nextH+"px";
+  });
   document.addEventListener("mouseup",()=>{dn=false;});
 }
 
@@ -290,9 +322,10 @@ function openEdit(el){
 
   // 크기: 요소 크기에 맞춤
   const r=el.getBoundingClientRect();
-  ied.style.left=r.left+"px";
+  const iedW=(el.id==="bt-text" ? 720 : Math.max(r.width+24,100));
+  ied.style.width=iedW+"px";
+  ied.style.left=(el.id==="bt-text" ? (r.left+r.width/2-iedW/2) : r.left)+"px";
   ied.style.top=r.top+"px";
-  ied.style.width=Math.max(r.width+24,100)+"px";
   // 높이: 내용에 맞게 자동 조절
   ied.style.height="auto";
   ied.rows=MULTILINE.has(el.id)?4:1;
@@ -339,25 +372,93 @@ setBtFs(document.getElementById("btfs").value);
 setBtLh(document.getElementById("btlh").value);
 
 // ── PNG 내보내기 ──
+// html2canvas는 mix-blend-mode와 canvas를 제대로 못 찍으므로
+// 오프스크린 캔버스에 직접 합성하여 저장
 async function exportPNG(){
   closeEdit();
   document.activeElement.blur();
+
   const ov=document.getElementById("ov");
   const ctrl=document.getElementById("ctrl");
-  ov.style.display="flex";ctrl.style.display="none";
-  document.querySelectorAll(".stk-del,.stk-rsz").forEach(e=>e.style.setProperty("display","none","important"));
-  const expStyle=document.createElement("style");
-  expStyle.textContent=".editable{background:none!important;outline:none!important;}";
-  document.head.appendChild(expStyle);
+  ov.style.display="flex"; ctrl.style.display="none";
+
+  // keyImg 로드 보장
+  await new Promise(resolve=>{
+    if(keyImg.complete && keyImg.naturalWidth>0) return resolve();
+    keyImg.onload=resolve; keyImg.onerror=resolve;
+  });
+  // insideImg 로드 보장 후 캔버스 재드로우
+  if(insideImg.src && insideImg.src!==location.href){
+    await new Promise(resolve=>{
+      if(insideImg.complete && insideImg.naturalWidth>0) return resolve();
+      insideImg.onload=resolve; insideImg.onerror=resolve;
+    });
+  }
+  drawInsideCanvas();
+  // 브라우저 렌더 반영 대기
+  await new Promise(r=>setTimeout(r,80));
+
   try{
-    const sheet=document.getElementById("sheet");
-    const cv=await html2canvas(sheet,{scale:2,useCORS:true,allowTaint:true,backgroundColor:null,logging:false,width:800,height:1130});
+    const W=800, H=1130;
+    const out=document.createElement("canvas");
+    out.width=W; out.height=H;
+    const octx=out.getContext("2d");
+
+    // 1. 벽돌 배경
+    octx.drawImage(document.getElementById("bg-canvas"),0,0);
+
+    // 2. 열쇠구멍 내부 이미지와 프레임 합성
+    const kw=KH_W, kh=KH_H;
+    const kx=Math.round((W-kw)/2), ky=290;
+
+    // 내부 이미지는 keyImg 실루엣으로 이미 마스킹된 insideCanvas를 그대로 배치
+    if(insideImg.src && insideImg.src!==location.href){
+      octx.drawImage(insideCanvas, 0, 0, KH_W, KH_H, kx, ky, kw, kh);
+    }
+
+    // keyImg는 화면과 같은 방식으로 multiply 합성해서 흰색 면이 덮이지 않게 함
+    octx.save();
+    octx.globalCompositeOperation = "multiply";
+    octx.drawImage(keyImg, kx, ky, kw, kh);
+    octx.restore();
+
+    // 4. 정보박스
+    const expStyle=document.createElement("style");
+    expStyle.textContent=".editable{background:none!important;outline:none!important;border:none!important;}";
+    document.head.appendChild(expStyle);
+
+    const sheetEl=document.getElementById("sheet");
+    const sheetR=sheetEl.getBoundingClientRect();
+
+    async function captureEl(el){
+      const cv2=await html2canvas(el,{scale:1,useCORS:true,allowTaint:true,backgroundColor:null,logging:false});
+      const r=el.getBoundingClientRect();
+      return {cv:cv2, x:Math.round(r.left-sheetR.left), y:Math.round(r.top-sheetR.top)};
+    }
+
+    const ib=await captureEl(document.getElementById("infobox"));
+    octx.drawImage(ib.cv,ib.x,ib.y,ib.cv.width,ib.cv.height);
+
+    // 5. 하단 텍스트
+    const bt=await captureEl(document.getElementById("btxt"));
+    octx.drawImage(bt.cv,bt.x,bt.y,bt.cv.width,bt.cv.height);
+
+    // 6. 스티커
+    const stkLayer=document.getElementById("stk-layer");
+    if(stkLayer.children.length>0){
+      document.querySelectorAll(".stk-del,.stk-rsz").forEach(e=>e.style.setProperty("display","none","important"));
+      const sk=await captureEl(stkLayer);
+      document.querySelectorAll(".stk-del,.stk-rsz").forEach(e=>e.style.removeProperty("display"));
+      octx.drawImage(sk.cv,sk.x,sk.y,sk.cv.width,sk.cv.height);
+    }
+
+    expStyle.remove();
+
     const a=document.createElement("a");
-    a.download="back-cover.png";a.href=cv.toDataURL("image/png");a.click();
-  }catch(e){alert("오류: "+e.message);}
-  ctrl.style.display="flex";ov.style.display="none";
-  document.querySelectorAll(".stk-del,.stk-rsz").forEach(e=>e.style.removeProperty("display"));
-  expStyle.remove();
+    a.download="back-cover.png"; a.href=out.toDataURL("image/png"); a.click();
+  }catch(e){ alert("오류: "+e.message); }
+
+  ctrl.style.display="flex"; ov.style.display="none";
 }
 </script>
 </body>
