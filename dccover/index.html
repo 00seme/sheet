@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>명탐정 코난 비공식 뒷표지 편집기</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Noto Sans KR",sans-serif;background:#1a1a1a;color:#e8e8e8;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+#ctrl{background:#242424;border-bottom:1px solid #3a3a3a;padding:9px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;z-index:100;}
+#ctrl h1{font-size:14px;font-weight:700;color:#c8a870;margin-right:4px;}
+.cg{display:flex;align-items:center;gap:4px;font-size:11px;color:#888;white-space:nowrap;}
+.cg input[type=range]{width:70px;accent-color:#c8a870;cursor:pointer;}
+.cg span{min-width:26px;}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:4px;font-size:12px;padding:6px 12px;transition:.15s;}
+.bp{background:#c8a870;color:#111;font-weight:700;}.bp:hover{background:#dfc090;}
+.bs{background:#333;color:#e8e8e8;border:1px solid #444;}.bs:hover{background:#3d3d3d;}
+.ub{font-family:inherit;cursor:pointer;background:#2a2a2a;border:1px dashed #444;border-radius:4px;font-size:11px;color:#888;padding:5px 10px;}
+.ub:hover{border-color:#c8a870;color:#c8a870;}
+input[type=file]{display:none;}
+.ctrl-r{margin-left:auto;display:flex;gap:8px;}
+#sw{flex:1;overflow:auto;background:#111;display:flex;justify-content:center;padding:24px;}
+#sheet{width:800px;min-height:1130px;position:relative;overflow:hidden;background:#8B6355;box-shadow:0 8px 40px rgba(0,0,0,.6);flex-shrink:0;}
+
+/* 정보박스: 세로 100px 늘림 */
+#infobox{
+  position:absolute;left:6%;top:3.5%;width:85%;
+  background:#fff;padding:12px 14px;z-index:10;
+  display:flex;flex-direction:column;gap:8px;
+  min-height:160px;
+}
+.ib-top{display:flex;align-items:flex-start;}
+#src-label{font-size:11.5px;color:#555;flex-shrink:0;min-width:50px;padding-top:2px;}
+#notice-wrap{flex:1;margin-left:150px;}
+#notice-txt{font-size:13px;color:#111;line-height:1.6;white-space:pre-wrap;word-break:keep-all;}
+.ib-bot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:8px;}
+#price-box{border:1.5px solid #333;padding:2px 8px;display:inline-flex;align-items:center;transform:translateX(200px);}
+#price-txt{font-size:13px;color:#111;min-width:40px;}
+#circle-name{font-size:13px;color:#111;font-weight:700;min-width:40px;text-align:right;margin-right:4px;}
+
+/* 편집 가능 요소 */
+.editable{cursor:text;border-radius:2px;transition:background .1s;}
+.editable:hover{background:rgba(200,168,112,.18);}
+.editable.active{background:rgba(200,168,112,.25);outline:1.5px solid #c8a870;}
+
+/* 편집 오버레이 textarea */
+#ied{
+  position:fixed;display:none;z-index:9000;
+  background:rgba(10,10,10,.95);border:2px solid #c8a870;border-radius:4px;
+  padding:4px 9px;color:#fff;
+  font-family:"Noto Sans KR",sans-serif;
+  outline:none;box-shadow:0 2px 16px rgba(0,0,0,.7);
+  resize:none;overflow:hidden;line-height:1.5;
+  min-width:80px;min-height:28px;
+}
+
+/* 열쇠구멍 고정 */
+#kh-wrap{
+  position:absolute;left:50%;transform:translateX(-50%);
+  width:344px;height:563px;top:290px;z-index:8;
+}
+#inside-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none;}
+#key-img{position:absolute;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;mix-blend-mode:multiply;}
+#inside-img{display:none;}
+
+/* 하단 텍스트: 균일한 스타일 */
+#btxt{position:absolute;left:50%;top:885px;transform:translateX(-50%);width:344px;z-index:10;display:flex;justify-content:center;align-items:flex-start;}
+#bt-text{
+  color:#fff;font-weight:700;font-size:18px;line-height:1.8;
+  text-align:center;white-space:pre-wrap;padding:2px 8px;border-radius:2px;
+  width:100%;
+}
+
+/* 스티커 */
+#stk-layer{position:absolute;inset:0;z-index:20;pointer-events:none;}
+.stk{position:absolute;cursor:grab;user-select:none;pointer-events:auto;}
+.stk:active{cursor:grabbing;}
+.stk img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;}
+.stk-del{position:absolute;top:-7px;right:-7px;width:18px;height:18px;background:#e55;border-radius:50%;font-size:10px;color:#fff;font-weight:700;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:22;line-height:18px;text-align:center;}
+.stk:hover .stk-del{display:flex;}
+.stk-rsz{position:absolute;bottom:-6px;right:-6px;width:13px;height:13px;background:#c8a870;border-radius:2px;cursor:se-resize;z-index:22;display:none;}
+.stk:hover .stk-rsz{display:block;}
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center;color:#fff;font-size:15px;}
+</style>
+</head>
+<body>
+<div id="ov">PNG 저장 중…</div>
+<textarea id="ied" autocomplete="off" spellcheck="false" rows="1"></textarea>
+
+<div id="ctrl">
+  <h1>📖 명탐정 코난 비공식 뒷표지 편집기</h1>
+  
+  <div class="cg">
+    <label>내부 크기</label>
+    <input type="range" id="isz" min="50" max="900" value="320" oninput="setIsz(this.value)">
+    <span id="iszV">320</span>
+  </div>
+  <div class="cg">
+    <label>내부 Y</label>
+    <input type="range" id="ioy" min="-250" max="250" value="0" oninput="setIoy(this.value)">
+    <span id="ioyV">0</span>
+  </div>
+  <div class="cg">
+    <label>문구 Y</label>
+    <input type="range" id="bty" min="760" max="1040" value="885" oninput="setBtY(this.value)">
+    <span id="btyV">885</span>
+  </div>
+  <div class="cg">
+    <label>문구 크기</label>
+    <input type="range" id="btfs" min="10" max="48" value="18" oninput="setBtFs(this.value)">
+    <span id="btfsV">18</span>
+  </div>
+  <div class="cg">
+    <label>문구 줄간격</label>
+    <input type="range" id="btlh" min="10" max="30" value="18" oninput="setBtLh(this.value)">
+    <span id="btlhV">1.8</span>
+  </div>
+  <button class="ub" onclick="document.getElementById('insFi').click()">🔑 내부 이미지</button>
+  <input type="file" id="insFi" accept="image/*" onchange="loadIns(this)">
+  <button class="ub" onclick="document.getElementById('stkFi').click()">🎨 스티커 추가</button>
+  <input type="file" id="stkFi" accept="image/*" multiple onchange="addStk(this)">
+  <div class="ctrl-r">
+    <button class="bs" onclick="if(confirm('초기화?'))location.reload()">초기화</button>
+    <button class="bp" onclick="exportPNG()">PNG 다운로드</button>
+  </div>
+</div>
+
+<div id="sw"><div id="sheet">
+  <canvas id="bg-canvas" style="position:absolute;inset:0;z-index:0;pointer-events:none;"></canvas>
+
+  <div id="infobox">
+    <div class="ib-top">
+      <div id="src-label" class="editable">c. 출처</div>
+      <div id="notice-wrap">
+        <div id="notice-txt" class="editable">본 이미지는 만화 &lt;명탐정 코난&gt; 단행본 표지 레이아웃을 모티브로 제작된 비공식 이미지입니다. UNOFFICIAL FAN ART</div>
+      </div>
+    </div>
+    <div class="ib-bot">
+      <div id="price-box"><span id="price-txt" class="editable">값 6000원</span></div>
+      <div id="circle-name" class="editable">페어명 코믹스</div>
+    </div>
+  </div>
+
+  <div id="kh-wrap">
+    <canvas id="inside-canvas"></canvas>
+    <img id="inside-img" alt="">
+    <img id="key-img" alt="">
+  </div>
+
+  <div id="btxt">
+    <div id="bt-text" class="editable">뒷표지 문구같은
+뭐시기
+뭐시기
+뭐시기!!!!1
+사건은 미궁속으로!!</div>
+  </div>
+
+  <div id="stk-layer"></div>
+</div></div>
+
+<script>
+// 벽돌 배경
+(function(){
+  const cv=document.getElementById("bg-canvas");
+  cv.width=800;cv.height=1130;
+  const ctx=cv.getContext("2d");
+  ctx.fillStyle="#8B6355";ctx.fillRect(0,0,800,1130);
+  ctx.fillStyle="#6b4a38";
+  const bH=18,bW=55,g=3;
+  for(let r=0;r*(bH+g)<1130;r++){
+    const off=r%2?bW/2:0,y=r*(bH+g);
+    for(let c=-1;c*(bW+g)<800+bW;c++)ctx.fillRect(c*(bW+g)+off,y,bW,bH);
+  }
+})();
+
+// ── 열쇠구멍 ──
+const KH_W=344, KH_H=Math.round(344*566/346);
+const insideCanvas=document.getElementById("inside-canvas");
+const insCtx=insideCanvas.getContext("2d");
+const insideImg=document.getElementById("inside-img");
+const keyImg=document.getElementById("key-img");
+insideCanvas.width=KH_W; insideCanvas.height=KH_H;
+keyImg.src="data:image/png;base64,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";
+
+function drawInsideCanvas(){
+  insCtx.clearRect(0,0,KH_W,KH_H);
+  if(!insideImg.src||insideImg.src===location.href) return;
+  const sz=parseInt(document.getElementById("isz").value);
+  const oy=parseInt(document.getElementById("ioy").value);
+  const iw=insideImg.naturalWidth, ih=insideImg.naturalHeight;
+  let dw,dh;
+  if(iw>=ih){dw=sz;dh=Math.round(sz*ih/iw);}
+  else{dh=sz;dw=Math.round(sz*iw/ih);}
+  const dx=Math.round((KH_W-dw)/2), dy=Math.round((KH_H-dh)/2+oy);
+  // 1. 이미지 그리기
+  insCtx.drawImage(insideImg,dx,dy,dw,dh);
+  // 2. keyImg 실루엣으로 클리핑 (destination-in: keyImg 흰색 부분만 남김)
+  insCtx.globalCompositeOperation="destination-in";
+  insCtx.drawImage(keyImg,0,0,KH_W,KH_H);
+  insCtx.globalCompositeOperation="source-over";
+}
+// keyImg 로드 후 바로 그리기 시도
+keyImg.onload=()=>drawInsideCanvas();
+
+function setIsz(v){document.getElementById("iszV").textContent=v;drawInsideCanvas();}
+function setIoy(v){document.getElementById("ioyV").textContent=v;drawInsideCanvas();}
+function setBtY(v){
+  document.getElementById("btyV").textContent=v;
+  document.getElementById("btxt").style.top=v+"px";
+}
+function setBtFs(v){
+  document.getElementById("btfsV").textContent=v;
+  document.getElementById("bt-text").style.fontSize=v+"px";
+}
+function setBtLh(v){
+  const lh=(Number(v)/10).toFixed(1);
+  document.getElementById("btlhV").textContent=lh;
+  document.getElementById("bt-text").style.lineHeight=lh;
+}
+function loadIns(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{insideImg.onload=drawInsideCanvas;insideImg.src=e.target.result;};
+  r.readAsDataURL(f);
+}
+
+// ── 스티커 ──
+let stkSeq=0;
+function addStk(input){
+  Array.from(input.files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      const layer=document.getElementById("stk-layer");
+      layer.style.pointerEvents="auto";
+      const div=document.createElement("div");div.className="stk";
+      div.style.cssText="left:300px;top:500px;width:120px;height:120px;";
+      div.dataset.id=stkSeq++;
+      const img=document.createElement("img");img.src=e.target.result;
+      const del=document.createElement("div");del.className="stk-del";del.textContent="×";
+      del.onclick=ev=>{ev.stopPropagation();div.remove();};
+      const rsz=document.createElement("div");rsz.className="stk-rsz";
+      initRsz(div,rsz);
+      div.append(img,del,rsz);layer.appendChild(div);initDrag(div);
+    };
+    r.readAsDataURL(f);
+  });
+  input.value="";
+}
+function initDrag(el){
+  let dn=false,sx=0,sy=0,ox=0,oy=0;
+  el.addEventListener("mousedown",e=>{
+    if(e.target.classList.contains("stk-del")||e.target.classList.contains("stk-rsz"))return;
+    dn=true;sx=e.clientX;sy=e.clientY;
+    ox=parseInt(el.style.left)||0;oy=parseInt(el.style.top)||0;
+    el.style.cursor="grabbing";e.preventDefault();
+  });
+  document.addEventListener("mousemove",e=>{if(!dn)return;el.style.left=(ox+e.clientX-sx)+"px";el.style.top=(oy+e.clientY-sy)+"px";});
+  document.addEventListener("mouseup",()=>{dn=false;el.style.cursor="grab";});
+}
+function initRsz(el,handle){
+  let dn=false,sx=0,sy=0,ow=0,oh=0;
+  handle.addEventListener("mousedown",e=>{dn=true;sx=e.clientX;sy=e.clientY;ow=el.offsetWidth;oh=el.offsetHeight;e.stopPropagation();e.preventDefault();});
+  document.addEventListener("mousemove",e=>{if(!dn)return;el.style.width=Math.max(20,ow+e.clientX-sx)+"px";el.style.height=Math.max(20,oh+e.clientY-sy)+"px";});
+  document.addEventListener("mouseup",()=>{dn=false;});
+}
+
+// ── 인라인 편집 (textarea 오버레이) ──
+const ied=document.getElementById("ied");
+let activeEl=null;
+// 여러 줄 허용 요소
+const MULTILINE=new Set(["notice-txt","bt-text"]);
+
+document.querySelectorAll(".editable").forEach(el=>{
+  el.addEventListener("click",e=>{e.stopPropagation();openEdit(el);});
+});
+document.addEventListener("click",e=>{
+  if(e.target!==ied&&!e.target.classList.contains("editable"))closeEdit();
+});
+
+function openEdit(el){
+  if(activeEl===el)return;
+  closeEdit();
+  activeEl=el;
+  el.classList.add("active");
+
+  const cs=window.getComputedStyle(el);
+  ied.value=el.innerText;
+  ied.style.fontSize=cs.fontSize;
+  ied.style.fontWeight=cs.fontWeight;
+  ied.style.color="#fff";
+  ied.style.textAlign=cs.textAlign||"left";
+  ied.style.lineHeight=cs.lineHeight;
+
+  // 크기: 요소 크기에 맞춤
+  const r=el.getBoundingClientRect();
+  ied.style.left=r.left+"px";
+  ied.style.top=r.top+"px";
+  ied.style.width=Math.max(r.width+24,100)+"px";
+  // 높이: 내용에 맞게 자동 조절
+  ied.style.height="auto";
+  ied.rows=MULTILINE.has(el.id)?4:1;
+  ied.style.display="block";
+  // 자동 높이 조절
+  ied.style.height=ied.scrollHeight+"px";
+  ied.focus();ied.select();
+}
+
+function applyEdit(){
+  if(!activeEl)return;
+  activeEl.textContent=ied.value;
+}
+
+function closeEdit(){
+  if(!activeEl)return;
+  applyEdit();
+  activeEl.classList.remove("active");
+  activeEl=null;
+  ied.style.display="none";
+}
+
+ied.addEventListener("input",()=>{
+  applyEdit();
+  // 높이 자동 조절
+  ied.style.height="auto";
+  ied.style.height=ied.scrollHeight+"px";
+});
+ied.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){e.preventDefault();closeEdit();return;}
+  if(e.key==="Enter"&&activeEl&&!MULTILINE.has(activeEl.id)){
+    e.preventDefault();closeEdit();
+  }
+  // MULTILINE: Enter 허용 → applyEdit는 input 이벤트가 처리
+});
+ied.addEventListener("blur",()=>setTimeout(closeEdit,80));
+
+// 하단 문구 조절기 초기화
+setBtY(document.getElementById("bty").value);
+setBtFs(document.getElementById("btfs").value);
+setBtLh(document.getElementById("btlh").value);
+
+// ── PNG 내보내기 ──
+async function exportPNG(){
+  closeEdit();
+  document.activeElement.blur();
+  const ov=document.getElementById("ov");
+  const ctrl=document.getElementById("ctrl");
+  ov.style.display="flex";ctrl.style.display="none";
+  document.querySelectorAll(".stk-del,.stk-rsz").forEach(e=>e.style.setProperty("display","none","important"));
+  const expStyle=document.createElement("style");
+  expStyle.textContent=".editable{background:none!important;outline:none!important;}";
+  document.head.appendChild(expStyle);
+  try{
+    const sheet=document.getElementById("sheet");
+    const cv=await html2canvas(sheet,{scale:2,useCORS:true,allowTaint:true,backgroundColor:null,logging:false,width:800,height:1130});
+    const a=document.createElement("a");
+    a.download="back-cover.png";a.href=cv.toDataURL("image/png");a.click();
+  }catch(e){alert("오류: "+e.message);}
+  ctrl.style.display="flex";ov.style.display="none";
+  document.querySelectorAll(".stk-del,.stk-rsz").forEach(e=>e.style.removeProperty("display"));
+  expStyle.remove();
+}
+</script>
+</body>
+</html>
