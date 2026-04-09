@@ -233,7 +233,6 @@ function addStk(input){
     const r=new FileReader();
     r.onload=e=>{
       const layer=document.getElementById("stk-layer");
-      layer.style.pointerEvents="auto";
       const div=document.createElement("div");div.className="stk";
       div.style.cssText="left:300px;top:500px;width:120px;height:120px;";
       div.dataset.id=stkSeq++;
