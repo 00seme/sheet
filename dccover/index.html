@@ -91,11 +91,15 @@ input[type=file]{display:none;}
 
 <div id="ctrl">
   <h1>📖 명탐정 코난 비공식 뒷표지 편집기</h1>
-  
   <div class="cg">
     <label>내부 크기</label>
     <input type="range" id="isz" min="50" max="900" value="320" oninput="setIsz(this.value)">
     <span id="iszV">320</span>
+  </div>
+  <div class="cg">
+    <label>내부 X</label>
+    <input type="range" id="iox" min="-250" max="250" value="0" oninput="setIox(this.value)">
+    <span id="ioxV">0</span>
   </div>
   <div class="cg">
     <label>내부 Y</label>
@@ -104,7 +108,7 @@ input[type=file]{display:none;}
   </div>
   <div class="cg">
     <label>문구 Y</label>
-    <input type="range" id="bty" min="760" max="1040" value="885" oninput="setBtY(this.value)">
+    <input type="range" id="bty" min="780" max="1040" value="885" oninput="setBtY(this.value)">
     <span id="btyV">885</span>
   </div>
   <div class="cg">
@@ -188,12 +192,13 @@ function drawInsideCanvas(){
   insCtx.clearRect(0,0,KH_W,KH_H);
   if(!insideImg.src||insideImg.src===location.href) return;
   const sz=parseInt(document.getElementById("isz").value);
+  const ox=parseInt(document.getElementById("iox").value);
   const oy=parseInt(document.getElementById("ioy").value);
   const iw=insideImg.naturalWidth, ih=insideImg.naturalHeight;
   let dw,dh;
   if(iw>=ih){dw=sz;dh=Math.round(sz*ih/iw);}
   else{dh=sz;dw=Math.round(sz*iw/ih);}
-  const dx=Math.round((KH_W-dw)/2), dy=Math.round((KH_H-dh)/2+oy);
+  const dx=Math.round((KH_W-dw)/2+ox), dy=Math.round((KH_H-dh)/2+oy);
   // 1. 이미지 그리기
   insCtx.drawImage(insideImg,dx,dy,dw,dh);
   // 2. keyImg 실루엣으로 클리핑 (destination-in: keyImg 흰색 부분만 남김)
@@ -205,20 +210,11 @@ function drawInsideCanvas(){
 keyImg.onload=()=>drawInsideCanvas();
 
 function setIsz(v){document.getElementById("iszV").textContent=v;drawInsideCanvas();}
+function setIox(v){document.getElementById("ioxV").textContent=v;drawInsideCanvas();}
 function setIoy(v){document.getElementById("ioyV").textContent=v;drawInsideCanvas();}
-function setBtY(v){
-  document.getElementById("btyV").textContent=v;
-  document.getElementById("btxt").style.top=v+"px";
-}
-function setBtFs(v){
-  document.getElementById("btfsV").textContent=v;
-  document.getElementById("bt-text").style.fontSize=v+"px";
-}
-function setBtLh(v){
-  const lh=(Number(v)/10).toFixed(1);
-  document.getElementById("btlhV").textContent=lh;
-  document.getElementById("bt-text").style.lineHeight=lh;
-}
+function setBtY(v){document.getElementById("btyV").textContent=v;document.getElementById("btxt").style.top=v+"px";}
+function setBtFs(v){document.getElementById("btfsV").textContent=v;document.getElementById("bt-text").style.fontSize=v+"px";}
+function setBtLh(v){const lh=(v/10).toFixed(1);document.getElementById("btlhV").textContent=lh;document.getElementById("bt-text").style.lineHeight=lh;}
 function loadIns(input){
   const f=input.files[0];if(!f)return;
   const r=new FileReader();
@@ -334,7 +330,10 @@ ied.addEventListener("keydown",e=>{
 });
 ied.addEventListener("blur",()=>setTimeout(closeEdit,80));
 
-// 하단 문구 조절기 초기화
+// 초기 UI 값 적용
+setIsz(document.getElementById("isz").value);
+setIox(document.getElementById("iox").value);
+setIoy(document.getElementById("ioy").value);
 setBtY(document.getElementById("bty").value);
 setBtFs(document.getElementById("btfs").value);
 setBtLh(document.getElementById("btlh").value);
