@@ -1,0 +1,242 @@
+
+<style>
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-jp.min.css');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Pretendard','Malgun Gothic',sans-serif; background: var(--color-background-tertiary); }
+.app { display: flex; height: 100vh; min-height: 600px; }
+.sb { width: 290px; min-width: 260px; background: var(--color-background-primary); border-right: 0.5px solid var(--color-border-tertiary); overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 7px; flex-shrink: 0; }
+.ra { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #111827; padding: 16px; gap: 10px; overflow: auto; }
+h1 { font-size: 13px; font-weight: 500; color: var(--color-text-primary); padding: 4px 0 8px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.sl { font-size: 10px; color: var(--color-text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+.tabs { display: flex; gap: 4px; }
+.tab { flex: 1; padding: 6px 3px; font-size: 10px; border: 0.5px solid var(--color-border-secondary); border-radius: 6px; cursor: pointer; background: transparent; color: var(--color-text-secondary); line-height: 1.4; font-family: 'Pretendard',sans-serif; }
+.tab.on { background: #1a3a6b; color: #fff; border-color: #1a3a6b; }
+.ctrl { display: flex; flex-direction: column; gap: 3px; }
+.ctrl label { font-size: 10px; color: var(--color-text-secondary); }
+.ctrl input[type=text],.ctrl textarea,.ctrl select { width: 100%; padding: 4px 7px; font-size: 12px; border: 0.5px solid var(--color-border-secondary); border-radius: 5px; background: var(--color-background-secondary); color: var(--color-text-primary); font-family: 'Pretendard',sans-serif; resize: vertical; }
+.ctrl textarea { min-height: 52px; }
+.canvas-wrap { background: #000; box-shadow: 0 4px 32px #0008; }
+canvas { display: block; }
+.ebtn { padding: 7px 20px; background: #1a3a6b; color: #fff; border: none; border-radius: 7px; font-size: 12px; cursor: pointer; font-weight: 600; font-family: 'Pretendard',sans-serif; }
+.ubtn { padding: 5px 8px; font-size: 11px; border: 0.5px dashed var(--color-border-secondary); border-radius: 5px; cursor: pointer; color: var(--color-text-secondary); background: var(--color-background-secondary); text-align: center; }
+.sr { display: flex; align-items: center; gap: 5px; }
+.sr label { font-size: 10px; color: var(--color-text-secondary); min-width: 28px; }
+.sr input[type=range] { flex: 1; }
+.sr span { font-size: 10px; color: var(--color-text-secondary); min-width: 32px; text-align: right; }
+.hr { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 2px 0; }
+.tr { display: flex; align-items: center; justify-content: space-between; }
+.tr .lbl { font-size: 11px; color: var(--color-text-secondary); }
+.tog { position: relative; width: 32px; height: 18px; flex-shrink: 0; }
+.tog input { opacity: 0; width: 0; height: 0; }
+.tsl { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 18px; transition: .2s; }
+.tsl:before { content: ''; position: absolute; width: 14px; height: 14px; left: 2px; top: 2px; background: white; border-radius: 50%; transition: .2s; }
+.tog input:checked + .tsl { background: #1a3a6b; }
+.tog input:checked + .tsl:before { transform: translateX(14px); }
+.seg { display: flex; border: 0.5px solid var(--color-border-secondary); border-radius: 5px; overflow: hidden; }
+.seg button { flex: 1; padding: 4px 5px; font-size: 11px; border: none; background: transparent; cursor: pointer; color: var(--color-text-secondary); font-family: 'Pretendard',sans-serif; }
+.seg button.on { background: #1a3a6b; color: #fff; }
+.cr { display: flex; align-items: center; gap: 6px; }
+.cr label { font-size: 10px; color: var(--color-text-secondary); flex: 1; }
+.cr input[type=color] { width: 32px; height: 24px; border: 0.5px solid var(--color-border-secondary); border-radius: 4px; cursor: pointer; padding: 1px; }
+</style>
+
+<div class="app">
+<div class="sb">
+  <h1>🎬 코난 환각 메이커</h1>
+  <div class="sl">테마</div>
+  <div class="tabs">
+    <button class="tab on" onclick="sT(1)">극장판<br>예고편</button>
+    <button class="tab" onclick="sT(2)">엔딩</button>
+    <button class="tab" onclick="sT(3)">본편<br>등장</button>
+  </div>
+  <hr class="hr">
+  <div class="sl">배경 이미지</div>
+  <div class="ubtn" onclick="document.getElementById('bgF').click()">📁 배경 이미지 업로드</div>
+  <input type="file" id="bgF" accept="image/*" style="display:none" onchange="lBg(event)">
+  <div class="sr"><label>X</label><input type="range" id="bgX" min="-1200" max="1200" value="0" oninput="ubg();bgXv.textContent=this.value"><span id="bgXv">0</span></div>
+  <div class="sr"><label>Y</label><input type="range" id="bgY" min="-800" max="800" value="0" oninput="ubg();bgYv.textContent=this.value"><span id="bgYv">0</span></div>
+  <div class="sr"><label>크기</label><input type="range" id="bgS" min="10" max="300" value="100" oninput="ubg();bgSv.textContent=this.value+'%'"><span id="bgSv">100%</span></div>
+  <hr class="hr">
+  <div id="pnl"></div>
+  <hr class="hr">
+  <button class="ebtn" onclick="xPng()">💾 PNG 저장 (1600×900)</button>
+</div>
+<div class="ra">
+  <div class="canvas-wrap" style="width:640px;height:360px;">
+    <canvas id="c" width="1600" height="900" style="width:640px;height:360px;"></canvas>
+  </div>
+  <div style="font-size:10px;color:#666;">실제 출력 해상도: 1600 × 900</div>
+</div>
+</div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=1600,H=900;
+let theme=1,bgImg=null,bgX=0,bgY=0,bgSc=1;
+
+const PJP='"Pretendard JP","Yu Gothic","Hiragino Kaku Gothic Pro","Noto Sans JP",sans-serif';
+const PKR='"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+
+const S={
+  t1:{lang:'JP',l1:'原　作',l2:'青山　剛昌',pos:'bottom-center'},
+  t2:{ct:'name',
+      nTop:'캐릭터 이름', nBot:'가상 성우',
+      nPos:'right',
+      sLbl:'주제가',sT1:'<Chronostasis>',sAr:'BUMP OF CHICKEN',
+      dOn:true,dL1:'監　督',dL2:'pair',
+      sub:'찰나의 사계절이여 TWILIGHT!!!',
+      sCol:'#ffffff',shCol:'#000000'},
+  t3:{lang:'JP',
+      r1:'さいおんじ りん',l1:'西園寺 霖(29)',
+      r2:'さいおんじ ぶんかざいだん',l2:'西園寺文化財団',
+      lk1:'윤서림(29)',lk2:'서림문화재단'}
+};
+
+function fJP(sz,w){return `${w} ${sz}px ${PJP}`;}
+function fKR(sz,w){return `${w} ${sz}px ${PKR}`;}
+function hSh(c,o){ctx.shadowColor=c;ctx.shadowBlur=0;ctx.shadowOffsetX=o;ctx.shadowOffsetY=o;}
+function sSh(c,b){ctx.shadowColor=c;ctx.shadowBlur=b;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;}
+function nSh(){ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;}
+function dSH(t,x,y,sw,sc,shc,sho){nSh();ctx.lineWidth=sw*2;ctx.lineJoin='round';ctx.strokeStyle=sc;ctx.strokeText(t,x,y);hSh(shc,sho);ctx.fillText(t,x,y);nSh();}
+function dS(t,x,y,sw,sc){nSh();ctx.lineWidth=sw*2;ctx.lineJoin='round';ctx.strokeStyle=sc;ctx.strokeText(t,x,y);ctx.fillText(t,x,y);nSh();}
+
+function sT(n){
+  theme=n;
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',i===n-1));
+  rP();draw();
+}
+
+function rP(){
+  const p=document.getElementById('pnl');
+  if(theme===1){
+    p.innerHTML=`
+    <div class="sl">언어</div>
+    <div class="seg">
+      <button class="${S.t1.lang==='JP'?'on':''}" onclick="S.t1.lang='JP';S.t1.l1='原　作';S.t1.l2='青山　剛昌';rP();draw()">JP</button>
+      <button class="${S.t1.lang==='KR'?'on':''}" onclick="S.t1.lang='KR';S.t1.l1='원　작';S.t1.l2='아오야마 고쇼';rP();draw()">KR</button>
+    </div>
+    <div class="ctrl"><label>윗줄</label><input type="text" value="${S.t1.l1}" oninput="S.t1.l1=this.value;draw()"></div>
+    <div class="ctrl"><label>아랫줄</label><input type="text" value="${S.t1.l2}" oninput="S.t1.l2=this.value;draw()"></div>
+    <div class="ctrl"><label>위치</label><select onchange="S.t1.pos=this.value;draw()">
+      <option value="bottom-center" ${S.t1.pos==='bottom-center'?'selected':''}>하단 중앙</option>
+      <option value="bottom-right" ${S.t1.pos==='bottom-right'?'selected':''}>하단 우측</option>
+    </select></div>`;
+  } else if(theme===2){
+    p.innerHTML=`
+    <div class="sl">감독/스태프 (중앙 고정)</div>
+    <div class="tr"><label class="lbl">표시</label><label class="tog"><input type="checkbox" ${S.t2.dOn?'checked':''} onchange="S.t2.dOn=this.checked;rP();draw()"><span class="tsl"></span></label></div>
+    ${S.t2.dOn?`
+    <div class="ctrl"><label>윗줄</label><input type="text" value="${S.t2.dL1}" oninput="S.t2.dL1=this.value;draw()"></div>
+    <div class="ctrl"><label>아랫줄</label><input type="text" value="${S.t2.dL2}" oninput="S.t2.dL2=this.value;draw()"></div>`:''}
+    <hr class="hr">
+    <div class="sl">출연자/주제가</div>
+    <div class="seg">
+      <button class="${S.t2.nPos==='left'?'on':''}" onclick="S.t2.nPos='left';draw()">← 왼쪽</button>
+      <button class="${S.t2.nPos==='right'?'on':''}" onclick="S.t2.nPos='right';draw()">오른쪽 →</button>
+    </div>
+    <div class="seg" style="margin-top:4px">
+      <button class="${S.t2.ct==='name'?'on':''}" onclick="S.t2.ct='name';rP();draw()">출연자</button>
+      <button class="${S.t2.ct==='song'?'on':''}" onclick="S.t2.ct='song';rP();draw()">주제가</button>
+    </div>
+    ${S.t2.ct==='name'?`
+    <div class="ctrl"><label>윗줄</label><input type="text" placeholder="캐릭터 이름" value="${S.t2.nTop==='캐릭터 이름'?'':S.t2.nTop}" oninput="S.t2.nTop=this.value||'캐릭터 이름';draw()"></div>
+    <div class="ctrl"><label>아랫줄</label><textarea placeholder="가상 성우" oninput="S.t2.nBot=this.value||'가상 성우';draw()">${S.t2.nBot==='가상 성우'?'':S.t2.nBot}</textarea></div>`:`
+    <div class="ctrl"><label>레이블</label><input type="text" value="${S.t2.sLbl}" oninput="S.t2.sLbl=this.value;draw()"></div>
+    <div class="ctrl"><label>제목</label><input type="text" value="${S.t2.sT1}" oninput="S.t2.sT1=this.value;draw()"></div>
+    <div class="ctrl"><label>아티스트</label><input type="text" value="${S.t2.sAr}" oninput="S.t2.sAr=this.value;draw()"></div>`}
+    <hr class="hr">
+    <div class="sl">하단 자막</div>
+    <div class="ctrl"><textarea oninput="S.t2.sub=this.value;draw()">${S.t2.sub}</textarea></div>
+    <div class="cr"><label>글씨 색상</label><input type="color" value="${S.t2.sCol}" oninput="S.t2.sCol=this.value;draw()"></div>
+    <div class="cr"><label>그림자 색상</label><input type="color" value="${S.t2.shCol}" oninput="S.t2.shCol=this.value;draw()"></div>`;
+  } else {
+    p.innerHTML=`
+    <div class="sl">언어</div>
+    <div class="seg">
+      <button class="${S.t3.lang==='JP'?'on':''}" onclick="S.t3.lang='JP';rP();draw()">JP</button>
+      <button class="${S.t3.lang==='KR'?'on':''}" onclick="S.t3.lang='KR';rP();draw()">KR</button>
+    </div>
+    ${S.t3.lang==='JP'?`
+    <div class="ctrl"><label>루비1</label><input type="text" value="${S.t3.r1}" oninput="S.t3.r1=this.value;draw()"></div>
+    <div class="ctrl"><label>이름 (한자)</label><input type="text" value="${S.t3.l1}" oninput="S.t3.l1=this.value;draw()"></div>
+    <div class="ctrl"><label>루비2</label><input type="text" value="${S.t3.r2}" oninput="S.t3.r2=this.value;draw()"></div>
+    <div class="ctrl"><label>직함</label><input type="text" value="${S.t3.l2}" oninput="S.t3.l2=this.value;draw()"></div>`:`
+    <div class="ctrl"><label>이름</label><input type="text" value="${S.t3.lk1}" oninput="S.t3.lk1=this.value;draw()"></div>
+    <div class="ctrl"><label>직함</label><input type="text" value="${S.t3.lk2}" oninput="S.t3.lk2=this.value;draw()"></div>`}`;
+  }
+}
+
+function lBg(e){const fi=e.target.files[0];if(!fi)return;const img=new Image();img.onload=()=>{bgImg=img;draw();};img.src=URL.createObjectURL(fi);}
+function ubg(){bgX=+document.getElementById('bgX').value;bgY=+document.getElementById('bgY').value;bgSc=+document.getElementById('bgS').value/100;draw();}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#060608';ctx.fillRect(0,0,W,H);
+  if(bgImg){const sw=bgImg.width*bgSc,sh=bgImg.height*bgSc;ctx.drawImage(bgImg,(W-sw)/2+bgX,(H-sh)/2+bgY,sw,sh);}
+  if(theme===1)dT1();else if(theme===2)dT2();else dT3();
+}
+
+function dT1(){
+  const s=S.t1,isJP=s.lang==='JP';
+  const cx=s.pos==='bottom-right'?W*.75:W/2,baseY=H-80;
+  ctx.save();ctx.textAlign='center';
+  ctx.font=isJP?fJP(86,900):fKR(86,900);ctx.fillStyle='#f5a623';
+  hSh('#000',2);ctx.fillText(s.l1,cx,baseY-135);nSh();
+  ctx.font=isJP?fJP(91,900):fKR(91,900);ctx.fillStyle='#f5a623';
+  hSh('#000',2);ctx.fillText(s.l2,cx,baseY);nSh();
+  ctx.font=fKR(22,400);ctx.fillStyle='rgba(255,255,255,0.9)';
+  hSh('#000',2);
+  ctx.fillText(isJP?'「名探偵 コナン」 비공식 이미지.  UNOFFICIAL FAN ART.':'「명탐정 코난」 비공식 이미지.  UNOFFICIAL FAN ART.',cx,baseY+46);
+  nSh();ctx.restore();
+}
+
+function dT2(){
+  const s=S.t2;
+  if(s.dOn){
+    const cx=W/2,dy=H/2-70;
+    ctx.save();ctx.textAlign='center';
+    ctx.font=fJP(46,600);ctx.fillStyle='#ffffff';dSH(s.dL1,cx,dy,1,'#000','#000',2);
+    ctx.font=fJP(60,600);ctx.fillStyle='#ffffff';dSH(s.dL2,cx,dy+84,1,'#000','#000',2);
+    ctx.restore();
+  }
+  const qx=s.nPos==='left'?W*.22:W*.78,qy=H/2;
+  ctx.save();ctx.textAlign='center';
+  if(s.ct==='name'){
+    const botLines=s.nBot.split('\n'),lineH=44,totalH=(1+botLines.length)*lineH,startY=qy-totalH/2+lineH;
+    ctx.font=fKR(35,600);ctx.fillStyle='#f5a623';dS(s.nTop,qx,startY,2,'#000');
+    ctx.font=fKR(35,600);ctx.fillStyle='#ffffff';
+    botLines.forEach((l,i)=>dS(l,qx,startY+lineH*(i+1),2,'#000'));
+  } else {
+    const ty=qy-60;
+    ctx.font=fKR(35,600);ctx.fillStyle='#f5a623';dS(s.sLbl,qx,ty,2,'#000');
+    ctx.font=fKR(35,600);ctx.fillStyle='#ffffff';dS(s.sT1,qx,ty+50,2,'#000');
+    ctx.font=fKR(35,600);ctx.fillStyle='#ffffff';dS(s.sAr,qx,ty+100,2,'#000');
+  }
+  nSh();ctx.restore();
+  if(s.sub){
+    ctx.save();ctx.textAlign='center';ctx.font=fKR(46,700);ctx.fillStyle=s.sCol;
+    sSh(s.shCol,20);ctx.fillText(s.sub,W/2,H-55);nSh();ctx.restore();
+  }
+}
+
+function dT3(){
+  const s=S.t3,isJP=s.lang==='JP';
+  const bw=720,bx=(W-bw)/2,bh=isJP?178:160,by=H-225-(isJP?0:20);
+  ctx.save();ctx.fillStyle='rgba(12,25,70,0.83)';ctx.beginPath();ctx.roundRect(bx,by,bw,bh,4);ctx.fill();
+  ctx.textAlign='center';const cx=bx+bw/2;
+  if(isJP){
+    ctx.font=fJP(22,400);ctx.fillStyle='#a8bce8';ctx.fillText(s.r1,cx,by+30);
+    ctx.font=fJP(54,700);ctx.fillStyle='#ffffff';ctx.fillText(s.l1,cx,by+86);
+    ctx.font=fJP(20,400);ctx.fillStyle='#a8bce8';ctx.fillText(s.r2,cx,by+114);
+    ctx.font=fJP(40,700);ctx.fillStyle='#ffffff';ctx.fillText(s.l2,cx,by+158);
+  } else {
+    ctx.font=fKR(54,700);ctx.fillStyle='#ffffff';ctx.fillText(s.lk1,cx,by+68);
+    ctx.font=fKR(40,700);ctx.fillStyle='#ffffff';ctx.fillText(s.lk2,cx,by+128);
+  }
+  ctx.restore();
+}
+
+function xPng(){const a=document.createElement('a');a.download=`conan_t${theme}_${Date.now()}.png`;a.href=cv.toDataURL('image/png');a.click();}
+document.fonts.ready.then(()=>draw());
+rP();draw();
+</script>
