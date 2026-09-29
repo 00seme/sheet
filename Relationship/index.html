@@ -36,13 +36,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
-.wrap{max-width:1000px;margin:0 auto;padding:28px 20px 28px}
+.wrap{max-width:864px;margin:0 auto;padding:28px 20px 28px}
 
 /* header */
 .head{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:12px 20px;margin-bottom:18px}
 .board-title{flex:1 1 320px;min-width:0;border:0;background:transparent;font-family:var(--serif);font-weight:700;font-size:34px;line-height:1.2;padding:4px 0;border-bottom:1px solid transparent}
 .board-title:hover,.board-title:focus{border-bottom-color:var(--line);outline:none}
-.actions{display:flex;gap:8px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 14px;font-weight:600;font-size:14px}
 .btn:hover{border-color:var(--ink)}
 .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -52,52 +52,58 @@ input,textarea{font:inherit;color:inherit}
 
 /* timeline */
 .board{position:relative}
-.era{display:grid;grid-template-columns:300px minmax(0,1fr);gap:0;position:relative;padding-bottom:22px}
+.board,.add-era{max-width:824px}
+.era{position:relative;padding:0 0 26px 30px}
 .era::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:4px;background:var(--accent)}
 .era:first-child::before{top:20px}
 .era:last-child::before{bottom:auto;height:22px}
 .era:only-child::before{display:none}
-.era.wide{grid-template-columns:1fr}
-.era.wide:not(.empty) .panel{margin:14px 0 0 300px}
+.chain{position:absolute;left:6px;top:18px;height:4px;width:24px;background:var(--accent);z-index:0;pointer-events:none}
+.erow{display:grid;column-gap:28px;align-items:start}
 .era-actions .hadd{font-weight:600;color:var(--ink)}
 .era.empty .panel{display:none}
+.era[data-mode="below"] .panel{margin-top:14px}
 .hcol{position:relative;display:flex;flex-direction:column;gap:4px;min-width:0}
-.era.wide .hrow{display:grid;grid-template-columns:repeat(var(--cols,1),minmax(150px,1fr));gap:24px;overflow-x:auto;padding-bottom:2px}
-.era.wide .hcol > *{max-width:100%}
-.era.wide .hcol:not(:last-child)::after{content:"";position:absolute;left:0;right:-24px;top:17px;height:4px;background:var(--accent);z-index:0}
+.hcol > *{max-width:100%}
 .hcol .when{position:relative;z-index:1}
-.era.wide .hrow[style*="--cols:2"] .when,.era.wide .hrow[style*="--cols:3"] .when,.era.wide .hrow[style*="--cols:4"] .when{text-align:center}
+.era.multi .when{text-align:center}
+.panel.moving{opacity:.85;box-shadow:0 12px 30px rgba(0,0,0,.18)}
 .side-del{align-self:flex-start;border:0;background:none;padding:2px 0;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
 .side-del:hover{color:var(--danger)}
 .era-actions .draw{display:none;font-weight:600;color:var(--ink)}
 .era.empty .era-actions .draw{display:inline}
-.gutter{position:relative;padding:2px 24px 0 30px;display:flex;flex-direction:column;gap:4px}
-.dot{position:absolute;left:6px;top:18px;width:24px;height:4px;background:var(--accent)}
-.gutter .rich{outline:none}
-.gutter input,.gutter textarea,.gutter .rich{border:0;background:transparent;width:100%;padding:2px 4px;margin-left:-4px;border-radius:4px;resize:none}
-.gutter .rich:hover{background:var(--soft)}
-.gutter .rich:focus{background:var(--panel);outline:1px solid var(--line)}
-.gutter input:hover,.gutter textarea:hover{background:var(--soft)}
-.gutter input:focus,.gutter textarea:focus{background:var(--panel);outline:1px solid var(--line)}
-.gutter .when{field-sizing:content;width:auto;align-self:flex-start;min-width:64px;max-width:100%;margin-left:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;line-height:1.4;padding:7px 14px;border-radius:10px}
-.gutter .when:hover{background:var(--accent);opacity:.92}
-.gutter .when:focus{background:var(--accent);outline:2px solid var(--focus);outline-offset:2px}
-.gutter .when::placeholder{color:var(--on-accent);opacity:.6}
+.hcol .rich{outline:none}
+.hcol input,.hcol .rich{border:0;background:transparent;width:100%;padding:2px 4px;margin-left:-4px;border-radius:4px;resize:none}
+.hcol .rich:hover{background:var(--soft)}
+.hcol .rich:focus{background:var(--panel);outline:1px solid var(--line)}
+.hcol input:hover,.hcol textarea:hover{background:var(--soft)}
+.hcol input:focus,.hcol textarea:focus{background:var(--panel);outline:1px solid var(--line)}
+.hcol .when{field-sizing:content;width:auto;align-self:flex-start;min-width:64px;max-width:100%;margin-left:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;line-height:1.4;padding:7px 14px;border-radius:10px}
+.hcol .when:hover{background:var(--accent);opacity:.92}
+.hcol .when:focus{background:var(--accent);outline:2px solid var(--focus);outline-offset:2px}
+.hcol .when::placeholder{color:var(--on-accent);opacity:.6}
 .etitle{font-weight:700;font-size:16px;margin-top:6px}
 .note{font-size:13px;color:var(--muted);line-height:1.6}
-.era-actions{display:flex;flex-wrap:wrap;gap:2px 10px;margin-top:6px}
+.era-actions{display:flex;flex-wrap:wrap;gap:2px 10px;margin-top:8px}
 .era-actions button{border:0;background:none;padding:2px 0;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
 .era-actions button:hover{color:var(--ink)}
 .era-actions button.del:hover{color:var(--danger)}
 
-.panel{max-width:540px;background:var(--soft);border-radius:20px;overflow:hidden;min-width:0;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-.panel-bar{display:flex;align-items:center;gap:10px;padding:5px 8px;border-bottom:1px solid var(--edge);min-height:36px;background:var(--panel)}
+.panel{position:relative;z-index:1;width:100%;max-width:100%;background:var(--soft);border-radius:20px;overflow:hidden;min-width:0;box-shadow:0 6px 18px rgba(0,0,0,.06);align-self:start}
+.stage{position:relative}
+.resize{position:absolute;right:0;bottom:0;width:22px;height:22px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 0 50%,var(--line) 50% 58%,transparent 58% 68%,var(--line) 68% 76%,transparent 76%)}
+.resize:hover{background:linear-gradient(135deg,transparent 0 50%,var(--accent) 50% 58%,transparent 58% 68%,var(--accent) 68% 76%,transparent 76%)}
+.pos{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex:0 0 auto}
+.pos button{border:0;background:var(--panel);padding:3px 8px;font-size:12px;color:var(--muted)}
+.pos button+button{border-left:1px solid var(--line)}
+.pos button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);font-weight:600}
+.size-lbl{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.panel-bar{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;display:flex;align-items:center;gap:10px;padding:5px 8px;border-bottom:1px solid var(--edge);min-height:36px;background:var(--panel)}
 .panel-bar .btn{padding:3px 9px;font-size:12px}
 .hint{font-size:13px;color:var(--muted);flex:1;min-width:0}
 .hint.linking{color:var(--focus);font-weight:600}
 .hint button{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:13px;padding:0 0 0 6px}
-.stage{overflow-x:auto}
-.stage svg{display:block;width:100%;min-width:360px;height:auto;user-select:none;-webkit-user-select:none}
+.stage svg{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none}
 .node{cursor:grab}
 .node:active{cursor:grabbing}
 .link{cursor:pointer}
@@ -127,7 +133,7 @@ input,textarea{font:inherit;color:inherit}
 .ins-actions{display:flex;gap:8px;margin-left:auto}
 .btn.danger{color:var(--danger)}
 
-.add-era{display:grid;grid-template-columns:300px 1fr;margin-top:4px}
+.add-era{display:flex;justify-content:center;margin-top:4px}
 .add-era .btn{grid-column:2;justify-self:start}
 .credit{margin:40px 0 0;display:flex;justify-content:flex-end;align-items:center;gap:12px;font-size:13px;font-weight:600;color:var(--muted)}
 .credit input{border:0;border-bottom:1px dashed var(--line);background:transparent;color:inherit;font:inherit;text-align:right;width:min(280px,60vw);padding:2px 4px}
@@ -141,6 +147,11 @@ input,textarea{font:inherit;color:inherit}
 .fo-desc{font:400 11px/1.35 var(--sans);color:var(--muted);text-align:center;text-shadow:0 0 3px var(--soft),0 0 3px var(--soft),0 0 2px var(--soft);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 .fo-desc b{font-weight:700;color:var(--ink)}
 .fo-desc mark{text-shadow:none}
+.heads{display:flex;flex-wrap:wrap;gap:8px}
+.head-pick{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;padding:2px;border-radius:8px;width:56px}
+.head-pick img{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--soft);border:1px solid var(--line)}
+.head-pick span{font-size:11px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.head-pick:hover img{outline:2px solid var(--accent);outline-offset:1px}
 .rtb{position:absolute;z-index:15;display:none;gap:2px;padding:3px;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
 .rtb.on{display:flex}
 .rtb button{border:0;background:none;padding:4px 9px;border-radius:5px;font-size:12px;color:var(--ink)}
@@ -162,7 +173,7 @@ input,textarea{font:inherit;color:inherit}
 .cast{margin:0 0 44px}
 .cast-head{display:flex;margin-bottom:12px}
 .cast-head .btn{padding:5px 12px;font-size:13px}
-.cast-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:18px}
+.cast-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px}
 .ccard{background:var(--panel);border-radius:22px;padding:22px;box-shadow:0 6px 20px rgba(0,0,0,.06);display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px 22px;align-items:center}
 .chead{position:relative;width:132px;height:132px;border-radius:50%;overflow:hidden;cursor:pointer;display:grid;place-items:center;color:#fff;font-weight:700;font-size:44px;box-shadow:0 2px 10px rgba(0,0,0,.14)}
 .chead img{width:100%;height:100%;object-fit:cover}
@@ -216,13 +227,11 @@ input,textarea{font:inherit;color:inherit}
 @media (max-width:640px){
   .wrap{padding:20px 12px 80px}
   .board-title{font-size:26px}
-  .era{grid-template-columns:104px minmax(0,1fr)}
-  .gutter{padding:2px 10px 0 26px}
-  .dot{width:20px}
-  .gutter .when{font-size:14px;padding:6px 10px}
+  .era{padding-left:26px}
+  .erow{grid-template-columns:1fr !important;row-gap:14px}
+  .erow > .panel{order:999 !important;margin-left:0 !important;width:100% !important}
+  .hcol .when{font-size:14px;padding:6px 10px}
   .etitle{font-size:13px}
-  .add-era{grid-template-columns:104px 1fr}
-  .era.wide:not(.empty) .panel{margin-left:26px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -233,6 +242,8 @@ input,textarea{font:inherit;color:inherit}
     <div class="actions">
       <button class="btn" id="helpBtn">사용법</button>
       <button class="btn" id="themeBtn">디자인</button>
+      <button class="btn" id="saveFileBtn" title="작업 내용을 파일로 저장">작업 저장</button>
+      <button class="btn file-btn" id="loadFileBtn" title="저장한 작업 파일 불러오기">불러오기<input type="file" id="loadFile" accept=".json,application/json" aria-label="작업 파일 불러오기"></button>
       <button class="btn" id="resetBtn">새로 시작</button>
       <button class="btn primary" id="exportBtn">PNG로 저장</button>
     </div>
@@ -266,6 +277,8 @@ input,textarea{font:inherit;color:inherit}
       <li>인물을 고르고 <b>관계 잇기</b>를 누른 뒤 상대를 누르면 선이 생겨요. 선을 누르면 관계 이름, 설명, 종류, 방향을 정해요.</li>
       <li>사건, 메모, 특징, 관계 설명은 글자를 드래그한 뒤 위에 뜨는 <b>굵게</b>나 <b>배경</b>을 누르면 꾸밀 수 있어요. 편집 화면에서도 바로 굵게, 배경색으로 보이고 PNG에도 그대로 나와요.</li>
       <li>맨 아래에 <b>커미션 크레딧</b>을 적을 수 있어요.</li>
+      <li>관계도 오른쪽 아래 모서리를 끌면 크기가 바뀌어요. 관계도 윗부분 막대를 끌면 위치를 옮길 수 있어요. 가로 시점 사이에 넣거나 시점 아래로 내릴 수 있고, <b>왼쪽, 아래, 오른쪽</b> 버튼으로도 바꿀 수 있어요. 시점 글 영역은 관계도에 맞춰 자동으로 넓어지거나 좁아져요.</li>
+      <li><b>작업 저장</b>으로 .json 파일을 받아 두고, <b>불러오기</b>로 이어서 작업할 수 있어요.</li>
       <li><b>디자인</b>에서 출력 색을 바꾸고, <b>PNG로 저장</b>으로 한 장의 이미지로 내보내요.</li>
     </ul>
     <div class="modal-foot"><button class="btn primary" data-close>확인</button></div>
@@ -292,6 +305,17 @@ input,textarea{font:inherit;color:inherit}
 <script>
 (function(){
 const W = 500, H = 210, R = 21;
+const TLW = 794, BGAP = 28, BOX_MIN_W = 260, BOX_MIN_H = 140, BOX_MAX_H = 640;
+const boxOf = era => (era.box = era.box || {w: W, h: H, slot: 99, below: false, bx: 0});
+function eraMode(era){
+  const b = boxOf(era), n = 1 + (era.sides || []).length;
+  const full = (TLW - (n-1)*BGAP) / n;
+  if (!era.people.length) return {mode: 'none', n, slot: -1, cw: full};
+  const slot = Math.max(0, Math.min(n, b.slot ?? n));
+  const cw = (TLW - b.w - n*BGAP) / n;
+  if (b.below || cw < 150) return {mode: 'below', n, slot: -1, cw: full};
+  return {mode: 'row', n, slot, cw};
+}
 const KINDS = {
   friend:{label:'우호', color:'#2F6FEB', dash:''},
   enemy:{label:'대립', color:'#D1344B', dash:'6 5'},
@@ -335,7 +359,20 @@ const THEMES = [
   {name:'라벤더', bg:'#ECE8F6', card:'#FFFFFF', text:'#2A2346', accent:'#6B4FD8'},
   {name:'벚꽃', bg:'#F6E9EE', card:'#FFFFFF', text:'#3A2330', accent:'#B8466E'},
   {name:'밤', bg:'#151B28', card:'#1F2737', text:'#E8ECF4', accent:'#8FB0FF'}];
-if (!Array.isArray(state.cast)) state.cast = [];
+function normalize(st){
+  if (!Array.isArray(st.cast)) st.cast = [];
+  if (!Array.isArray(st.eras)) st.eras = [];
+  st.eras.forEach(e => {
+    if (!e.id) e.id = uid();
+    if (!Array.isArray(e.people)) e.people = [];
+    if (!Array.isArray(e.links)) e.links = [];
+    if (e.sides && !Array.isArray(e.sides)) e.sides = [];
+    if (e.box){ if (e.box.side){ if (e.box.side === 'left') e.box.slot = 0; else if (e.box.side === 'below') e.box.below = true; else e.box.slot = 99; delete e.box.side; } e.box.bx = +e.box.bx || 0; e.box.w = Math.max(BOX_MIN_W, Math.min(TLW, +e.box.w || W)); e.box.h = Math.max(BOX_MIN_H, Math.min(BOX_MAX_H, +e.box.h || H)); }
+  });
+  st.cast.forEach(c => { if (!c.id) c.id = uid(); if (c.desc && !c.traits){ c.traits = c.desc; delete c.desc; } });
+  return st;
+}
+normalize(state);
 if (!state.theme || (state.theme.bg === '#E9EDF3' && state.theme.accent === '#1D2740')) state.theme = {...THEMES[0], pattern: state.theme?.pattern || false};
 state.cast.forEach(c => { if (c.desc && !c.traits){ c.traits = c.desc; delete c.desc; } });
 
@@ -684,18 +721,17 @@ function renderAll(){
   }
   state.eras.forEach((era, i) => board.appendChild(buildEra(era, i)));
   board.querySelectorAll('.when').forEach(fitInput);
-  board.querySelectorAll('.era.wide .hrow').forEach(row => { equalTabs(row); row.addEventListener('input', e => { if (e.target.classList.contains('when')) equalTabs(row); }); });
+  board.querySelectorAll('.era .erow').forEach(row => { equalTabs(row); row.addEventListener('input', e => { if (e.target.classList.contains('when')){ equalTabs(row); updateChain(row.closest('.era')); } }); });
   board.querySelectorAll('textarea.note').forEach(t => { const g = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }; g(); t.addEventListener('input', g); });
 }
 
 function buildEra(era, i){
   const el = document.createElement('section');
-  const nSides = (era.sides || []).length;
-  el.className = 'era' + (era.people.length ? '' : ' empty') + (!era.people.length || nSides ? ' wide' : ''); el.dataset.id = era.id;
+  const nSides = (era.sides || []).length, bx = boxOf(era);
+  el.className = 'era' + (era.people.length ? '' : ' empty') + (nSides ? ' multi' : ''); el.dataset.id = era.id;
   el.innerHTML = `
-    <div class="gutter">
-      <span class="dot" aria-hidden="true"></span>
-      <div class="hrow" style="--cols:${1 + nSides}">
+    <span class="chain" aria-hidden="true"></span>
+    <div class="erow">
         <div class="hcol">
           <input class="when" aria-label="시기" placeholder="시기" value="${esc(era.when)}">
           ${richField(era.title, {cls:"etitle", ph:"사건", label:"사건", single:true})}
@@ -708,21 +744,25 @@ function buildEra(era, i){
           ${richField(sd.note, {cls:"note", k:"note", ph:"메모", label:"메모"})}
           <button class="side-del" data-sdel="${sd.id}">이 시점 삭제</button>
         </div>`).join('')}
+    <div class="panel">
+      <div class="panel-bar" title="막대를 끌어서 관계도를 옮길 수 있어요"><button class="btn" data-act="add-person">인물 추가</button><span class="hint"></span>
+        <span class="size-lbl"></span>
+        <div class="pos" role="group" aria-label="관계도 위치">
+          <button type="button" data-pos="left" title="관계도를 왼쪽에">왼쪽</button><button type="button" data-pos="below" title="관계도를 시점 아래에">아래</button><button type="button" data-pos="right" title="관계도를 오른쪽에">오른쪽</button>
+        </div>
       </div>
-      <div class="era-actions">
+      <div class="stage"><svg viewBox="0 0 ${bx.w} ${bx.h}" role="img" aria-label="${esc(era.when)} 인물 관계도"></svg><div class="resize" title="끌어서 관계도 크기 조절" aria-hidden="true"></div></div>
+      <div class="inspector"></div>
+    </div>
+    </div>
+    <div class="era-actions">
         <button data-act="up" ${i===0?'hidden':''}>위로</button>
         <button data-act="down" ${i===state.eras.length-1?'hidden':''}>아래로</button>
         <button data-act="draw" class="draw">관계도 그리기</button>
         ${nSides < 3 ? '<button data-act="hadd" class="hadd">옆에 시점 추가</button>' : ''}
         <button data-act="dup">복제</button>
         <button data-act="del" class="del">삭제</button>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="panel-bar"><button class="btn" data-act="add-person">인물 추가</button><span class="hint"></span></div>
-      <div class="stage"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(era.when)} 인물 관계도"></svg></div>
-      <div class="inspector"></div>
-    </div>`;
+      </div>`;
   const bind = (sel_, key) => el.querySelector(sel_).addEventListener('input', e => { era[key] = e.target.value; save(); });
   bind('.when','when'); el.querySelector('.when').addEventListener('input', e => fitInput(e.target)); bind('.etitle','title'); bind('.note','note');
   el.querySelector('.era-actions').addEventListener('click', e => {
@@ -756,11 +796,112 @@ function buildEra(era, i){
     };
   });
   el.querySelector('[data-act="add-person"]').onclick = () => addPerson(era);
+  el.querySelectorAll('[data-pos]').forEach(btn => btn.onclick = () => {
+    const b = boxOf(era), v = btn.dataset.pos;
+    if (v === 'below') b.below = true; else { b.below = false; b.slot = v === 'left' ? 0 : 99; }
+    save(); applyEraLayout(era, el); renderDiagram(era, el);
+  });
+  wireResize(era, el);
+  wireMove(era, el);
+  applyEraLayout(era, el);
   wireSvg(era, el.querySelector('svg'));
   paintEra(era, el);
   return el;
 }
 
+function applyEraLayout(era, el = eraEl(era)){
+  if (!el) return;
+  const b = boxOf(era), M = eraMode(era);
+  const erow = el.querySelector('.erow'), panel = el.querySelector('.panel');
+  const cols = [...erow.querySelectorAll(':scope > .hcol')];
+  el.dataset.mode = M.mode;
+  const tpl = [];
+  if (M.mode === 'row'){
+    for (let k = 0; k <= M.n; k++) tpl.push(k === M.slot ? `minmax(0,${b.w}px)` : 'minmax(0,1fr)');
+    cols.forEach((c, i) => c.style.order = i < M.slot ? i : i + 1);
+    Object.assign(panel.style, {order: M.slot, gridColumn: '', marginLeft: '', width: ''});
+  } else {
+    for (let k = 0; k < M.n; k++) tpl.push('minmax(0,1fr)');
+    cols.forEach((c, i) => c.style.order = i);
+    Object.assign(panel.style, {order: 999, gridColumn: '1 / -1', marginLeft: `${Math.max(0, Math.min(TLW - b.w, b.bx || 0)) / TLW * 100}%`, width: `min(100%, ${b.w}px)`});
+  }
+  erow.style.gridTemplateColumns = tpl.join(' ');
+  el.querySelector('svg').setAttribute('viewBox', `0 0 ${b.w} ${b.h}`);
+  const pressed = M.mode === 'below' ? 'below' : M.mode === 'row' ? (M.slot === 0 ? 'left' : M.slot === M.n ? 'right' : '') : '';
+  el.querySelectorAll('[data-pos]').forEach(x => x.setAttribute('aria-pressed', x.dataset.pos === pressed));
+  el.querySelector('.size-lbl').textContent = `${Math.round(b.w)} × ${Math.round(b.h)}`;
+  requestAnimationFrame(() => updateChain(el));
+}
+function updateChain(el){
+  const er = el.getBoundingClientRect();
+  const lefts = [...el.querySelectorAll('.erow > .hcol > .when')].map(t => t.getBoundingClientRect().left - er.left);
+  el.querySelector('.chain').style.width = Math.max(24, Math.max(...lefts) - 6 + 4) + 'px';
+}
+window.addEventListener('resize', () => board.querySelectorAll('.era').forEach(updateChain));
+function wireMove(era, el){
+  const bar = el.querySelector('.panel-bar'), panel = el.querySelector('.panel'), erow = el.querySelector('.erow');
+  let st = null;
+  bar.addEventListener('pointerdown', e => {
+    if (e.target.closest('button, input, [data-rich]') || window.matchMedia('(max-width:640px)').matches) return;
+    e.preventDefault();
+    const pr = panel.getBoundingClientRect();
+    st = {id: e.pointerId, gx: e.clientX - pr.left, sx: e.clientX, sy: e.clientY, moved: false};
+    bar.setPointerCapture(e.pointerId);
+  });
+  bar.addEventListener('pointermove', e => {
+    if (!st || st.id !== e.pointerId) return;
+    if (!st.moved && Math.hypot(e.clientX - st.sx, e.clientY - st.sy) < 5) return;
+    st.moved = true; panel.classList.add('moving'); bar.style.cursor = 'grabbing';
+    const b = boxOf(era), n = 1 + (era.sides || []).length;
+    const er = erow.getBoundingClientRect(), scale = er.width / TLW;
+    const cols = [...erow.querySelectorAll(':scope > .hcol')];
+    const textBottom = Math.max(...cols.map(c => c.getBoundingClientRect().bottom));
+    const wantBelow = e.clientY > textBottom + 30 && e.clientY > panel.getBoundingClientRect().top + 60 || (b.below && e.clientY > textBottom);
+    let changed = false;
+    if (wantBelow){
+      const bx = Math.round(Math.max(0, Math.min(TLW - b.w, (e.clientX - er.left - st.gx) / scale)));
+      if (!b.below || b.bx !== bx){ b.below = true; b.bx = bx; changed = true; }
+    } else {
+      const centers = cols.map(c => { const r = c.getBoundingClientRect(); return r.left + r.width/2; });
+      const slot = centers.filter(x => x < e.clientX).length;
+      if (b.below || Math.min(n, b.slot ?? n) !== slot){ b.below = false; b.slot = slot === n ? 99 : slot; changed = true; }
+    }
+    if (changed){ applyEraLayout(era, el); }
+  });
+  const end = e => {
+    if (!st || st.id !== e.pointerId) return;
+    const moved = st.moved; st = null; panel.classList.remove('moving'); bar.style.cursor = '';
+    if (moved){ save(); renderDiagram(era, el); }
+  };
+  bar.addEventListener('pointerup', end); bar.addEventListener('pointercancel', end);
+}
+function wireResize(era, el){
+  const hd = el.querySelector('.resize');
+  let st = null;
+  hd.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation();
+    const b = boxOf(era), rect = el.querySelector('.stage').getBoundingClientRect();
+    st = {x: e.clientX, y: e.clientY, w: b.w, h: b.h, scale: rect.width / b.w, id: e.pointerId};
+    hd.setPointerCapture(e.pointerId);
+  });
+  hd.addEventListener('pointermove', e => {
+    if (!st || st.id !== e.pointerId) return;
+    const b = boxOf(era);
+    const minW = Math.max(BOX_MIN_W, ...era.people.map(p => p.x + R + 10));
+    const minH = Math.max(BOX_MIN_H, ...era.people.map(p => p.y + R + 26));
+    b.w = Math.round(Math.max(minW, Math.min(TLW, st.w + (e.clientX - st.x) / st.scale)));
+    b.h = Math.round(Math.max(minH, Math.min(BOX_MAX_H, st.h + (e.clientY - st.y) / st.scale)));
+    applyEraLayout(era, el); renderDiagram(era, el);
+  });
+  const end = e => { if (!st || st.id !== e.pointerId) return; st = null; era.people.forEach(p => clamp(p, era)); save(); renderDiagram(era, el); };
+  hd.addEventListener('pointerup', end); hd.addEventListener('pointercancel', end);
+}
+function knownHeads(){
+  const m = new Map();
+  state.cast.forEach(c => { if (c.img && !m.has(c.img)) m.set(c.img, plain(c.name) || '이름 없음'); });
+  state.eras.forEach(e => e.people.forEach(p => { if (p.img && !m.has(p.img)) m.set(p.img, plain(p.name) || '이름 없음'); }));
+  return m;
+}
 function cloneEra(era){
   const map = {};
   const c = JSON.parse(JSON.stringify(era));
@@ -793,7 +934,8 @@ function renderDiagram(era, el = eraEl(era)){
   const svg = el.querySelector('svg');
   let out = '';
   if (!era.people.length){
-    out += `<text class="svg-empty" x="${W/2}" y="${H/2}" text-anchor="middle">‘인물 추가’를 누르거나 빈 곳을 두 번 눌러 인물을 추가하세요.</text>`;
+    const bb = boxOf(era);
+    out += `<text class="svg-empty" x="${bb.w/2}" y="${bb.h/2}" text-anchor="middle">‘인물 추가’를 누르거나 빈 곳을 두 번 눌러 인물을 추가하세요.</text>`;
   }
   for (const l of era.links){
     const g = geo(era, l); if (!g) continue;
@@ -843,6 +985,7 @@ function renderInspector(era, el = eraEl(era)){
         <label class="btn file-btn">${p.img ? '바꾸기' : 'PNG 넣기'}<input type="file" accept="image/png,image/*" aria-label="두상 이미지 선택"></label>
         ${p.img ? `<button class="btn" data-act="noimg">빼기</button>` : ''}
       </div></div>
+      ${(() => { const hs = [...knownHeads()].filter(([src]) => src !== p.img); return hs.length ? `<div class="field" style="flex:1 1 100%">이전에 쓴 인물 불러오기 (두상과 이름)<div class="heads">${hs.map(([src, nm], i) => `<button type="button" class="head-pick" data-hi="${i}" title="${esc(nm)}"><img src="${src}" alt="${esc(nm)}"><span>${esc(nm)}</span></button>`).join('')}</div></div>` : ''; })()}
       ${p.img ? '' : `<div class="field" style="flex:0 0 auto">색<div class="chips">${COLORS.map(c => `<button class="sw" data-c="${c}" style="background:${c}" aria-label="색 ${c}" aria-pressed="${p.color===c}"></button>`).join('')}</div></div>`}
       ${state.cast.length ? `<div class="field" style="flex:1 1 100%">등장인물에서 불러오기<div class="chips">${state.cast.map(c => `<button class="chip" data-cast="${c.id}">${esc(c.name || '이름 없음')}</button>`).join('')}</div></div>` : ''}
       <div class="ins-actions">
@@ -850,7 +993,7 @@ function renderInspector(era, el = eraEl(era)){
         <button class="btn danger" data-act="del">삭제</button>
       </div>`;
     box.querySelectorAll('input[data-k]').forEach(inp => inp.addEventListener('input', () => { p[inp.dataset.k] = inp.value; save(); renderDiagram(era, el); }));
-    box.querySelector('[data-k="desc"]').addEventListener('input', e => { p.desc = e.target.value; clamp(p); save(); renderDiagram(era, el); });
+    box.querySelector('[data-k="desc"]').addEventListener('input', e => { p.desc = e.target.value; clamp(p, era); save(); renderDiagram(era, el); });
     box.querySelectorAll('.sw').forEach(b => b.onclick = () => { p.color = b.dataset.c; save(); paintEra(era, el); });
     box.querySelector('input[type=file]').addEventListener('change', async e => {
       const f = e.target.files[0]; if (!f) return;
@@ -863,6 +1006,8 @@ function renderInspector(era, el = eraEl(era)){
       p.name = c.name; p.color = c.color; if (c.img) p.img = c.img; else delete p.img;
       save(); paintEra(era, el);
     });
+    { const hs = [...knownHeads()].filter(([src]) => src !== p.img);
+      box.querySelectorAll('[data-hi]').forEach(b => b.onclick = () => { const [src, nm] = hs[+b.dataset.hi]; p.img = src; if (nm && nm !== '이름 없음') p.name = nm; save(); paintEra(era, el); }); }
     const noimg = box.querySelector('[data-act="noimg"]');
     if (noimg) noimg.onclick = () => { delete p.img; save(); paintEra(era, el); };
     box.querySelector('[data-act="link"]').onclick = () => { linking = {era: era.id, from: p.id}; paintEra(era, el); };
@@ -890,6 +1035,7 @@ function renderInspector(era, el = eraEl(era)){
 
 /* ---------- actions ---------- */
 function freeSpot(era){
+  const {w: W, h: H} = boxOf(era);
   let best = [W/2, H/2 - 20], bestD = -1;
   for (let x = 70; x <= W-70; x += 60) for (let y = 40; y <= H-60; y += 45){
     const d = era.people.length ? Math.min(...era.people.map(p => Math.hypot(p.x-x, p.y-y))) : 1e9 - Math.hypot(x-W/2, y-H/2);
@@ -897,11 +1043,11 @@ function freeSpot(era){
   }
   return best;
 }
-function clamp(p){ p.x = Math.max(R+10, Math.min(W-R-10, p.x)); p.y = Math.max(R+10, Math.min(H-R-26-((p.desc || '').trim() ? 30 : 0), p.y)); }
+function clamp(p, era){ const {w: W, h: H} = era ? boxOf(era) : {w: TLW, h: BOX_MAX_H}; p.x = Math.max(R+10, Math.min(W-R-10, p.x)); p.y = Math.max(R+10, Math.min(H-R-26-((p.desc || '').trim() ? 30 : 0), p.y)); }
 function addPerson(era, x, y){
   if (x == null) [x, y] = freeSpot(era);
   const p = {id:uid(), name:`인물 ${String.fromCharCode(65 + era.people.length % 26)}`, color: COLORS[era.people.length % COLORS.length], x, y};
-  clamp(p);
+  clamp(p, era);
   const wasEmpty = !era.people.length;
   era.people.push(p);
   sel = {era: era.id, type:'person', id:p.id}; linking = null;
@@ -942,7 +1088,7 @@ function wireSvg(era, svg){
     const pt = toLocal(e), dx = pt.x - drag.sx, dy = pt.y - drag.sy;
     if (!drag.moved && Math.hypot(dx, dy) < 4) return;
     drag.moved = true;
-    drag.p.x = drag.ox + dx; drag.p.y = drag.oy + dy; clamp(drag.p);
+    drag.p.x = drag.ox + dx; drag.p.y = drag.oy + dy; clamp(drag.p, era);
     renderDiagram(era);
   });
   const end = e => {
@@ -982,6 +1128,24 @@ document.addEventListener('keydown', e => {
   }
 });
 
+function stamp(){ const d = new Date(), z = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}`; }
+$('#saveFileBtn').onclick = async () => {
+  const data = JSON.stringify({app: 'relation-timeline', version: 1, savedAt: new Date().toISOString(), state}, null, 1);
+  await saveFile(new Blob([data], {type: 'application/json'}), `인물관계도_${stamp()}.json`, '작업 파일을 저장했어요.');
+};
+$('#loadFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const obj = JSON.parse(await f.text());
+    const st = obj && obj.state ? obj.state : obj;
+    if (!st || !Array.isArray(st.eras)) throw new Error('bad');
+    snapshot();
+    state = normalize(st);
+    if (!state.theme) state.theme = {...THEMES[0]};
+    sel = null; linking = null; save(); renderAll();
+    toast(`‘${f.name}’을 불러왔어요.`, true);
+  } catch(err){ toast('작업 파일을 읽지 못했어요. 이 페이지에서 저장한 .json 파일인지 확인해 주세요.'); }
+});
 $('#commission').addEventListener('input', e => { state.commission = e.target.value; save(); });
 $('#addEraBtn').onclick = () => {
   const era = {id:uid(), when:`시점 ${state.eras.length+1}`, title:'사건', note:'메모', people:[], links:[]};
@@ -1130,7 +1294,7 @@ async function renderPNG(S = 2){
     shadow: dark ? 'rgba(0,0,0,.35)' : 'rgba(20,20,30,.08)', nodeShadow: dark ? 'rgba(0,0,0,.45)' : 'rgba(20,20,30,.20)',
     onAccent: lum(T.accent) > .6 ? '#1A1A1A' : '#FFFFFF', hl: T.hl || T.accent, onHl: T.hlText || (lum(T.hl || T.accent) > .6 ? '#1A1A1A' : '#FFFFFF')};
   const PAD = 56, GUT = 320, GAP = 30;
-  const CW = PAD*2 + GUT + W, FULL = CW - PAD*2;
+  const CW = PAD*2 + 26 + TLW, FULL = CW - PAD*2;
 
   // --- measure cast cards ---
   const m = document.createElement('canvas').getContext('2d');
@@ -1171,17 +1335,24 @@ async function renderPNG(S = 2){
     return {item, tl, nl, textH};
   };
   const eraLay = state.eras.map(era => {
-    const full = era.people.length > 0, nS = (era.sides || []).length;
-    if (full && !nS){
-      const tlc = richWrap(m, era.title || '', TW, 2, 17, 700).filter(l => l.length).length;
-      const c = colLay(era, TW, Math.max(1, Math.floor((H - 70 - tlc*25 - 4) / 20)));
-      return {full, cols:[c], cw: TW, h: H, dOff: 0};
-    }
-    const items = [era, ...(era.sides || [])], n = items.length;
-    const cw = (EW - (n-1)*HGAP) / n;
+    const M = eraMode(era), bx = boxOf(era), full = M.mode !== 'none';
+    const items = [era, ...(era.sides || [])], n = items.length, cw = M.cw;
     const cols = items.map(it => colLay(it, cw, 12));
     const rowH = Math.max(44, ...cols.map(c => c.textH));
-    return {full, cols, cw, h: full ? rowH + 20 + H : rowH, dOff: full ? rowH + 20 : 0};
+    const tabX = PAD + 26, colX = [];
+    let boxX = tabX, dOff = 0, h = rowH;
+    if (M.mode === 'row'){
+      let x = tabX;
+      for (let k = 0; k <= n; k++){
+        if (k === M.slot){ boxX = x; x += bx.w + BGAP; }
+        else { colX.push(x); x += cw + BGAP; }
+      }
+      h = Math.max(rowH, bx.h);
+    } else {
+      for (let k = 0; k < n; k++) colX.push(tabX + k*(cw + BGAP));
+      if (M.mode === 'below'){ boxX = tabX + Math.max(0, Math.min(TLW - bx.w, bx.bx || 0)); dOff = rowH + 20; h = dOff + bx.h; }
+    }
+    return {full, cols, cw, h, dOff, colX, boxX, bw: bx.w, bh: bx.h};
   });
   const tops = []; let acc = TL;
   eraLay.forEach(l => { tops.push(acc); acc += l.h + GAP; });
@@ -1273,16 +1444,13 @@ async function renderPNG(S = 2){
   }
   state.eras.forEach((era, i) => {
     const top = tops[i], L = eraLay[i];
-    ctx.fillStyle = C.accent; ctx.fillRect(spineX - 2, top + 18, tabX - spineX + 2, 4);
+    ctx.fillStyle = C.accent; ctx.fillRect(spineX - 2, top + 18, Math.max(...L.colX) - spineX + 2, 4);
     if (state.eras.length > 1){ ctx.beginPath(); ctx.arc(spineX, top + 20, 5, 0, Math.PI*2); ctx.fill(); }
-    // horizontal connectors between side points (drawn under the tabs)
-    ctx.fillStyle = C.accent;
-    for (let k = 0; k < L.cols.length - 1; k++) ctx.fillRect(tabX + k*(L.cw + HGAP), top + 18, L.cw + HGAP, 4);
     ctx.font = `700 17px ${SANS}`;
     const whens = L.cols.map((c, k) => wrap(ctx, plain(c.item.when) || (k ? '' : `${i+1}번째 시점`), L.cw - 30, 1)[0] || ' ');
     const rowW = Math.min(L.cw, Math.max(40, ...whens.map(t => ctx.measureText(t).width + 30)));
     L.cols.forEach((c, k) => {
-      const cx = tabX + k*(L.cw + HGAP);
+      const cx = L.colX[k];
       ctx.font = `700 17px ${SANS}`;
       const when = whens[k], ww = L.cols.length > 1 ? rowW : Math.max(40, ctx.measureText(when).width + 30);
       rrect(ctx, cx, top, ww, 40, 12); ctx.fillStyle = C.accent; ctx.fill();
@@ -1299,10 +1467,9 @@ async function renderPNG(S = 2){
     });
     if (!L.full) return;
 
-    const ox = PAD + GUT, dt = top + L.dOff;
-    soft(); rrect(ctx, ox, dt, W, H, 22); ctx.fillStyle = C.soft; ctx.fill(); noShadow();
-    ctx.save(); rrect(ctx, ox, dt, W, H, 22); ctx.clip(); ctx.translate(ox, dt);
-    if (!era.people.length){ ctx.textAlign = 'center'; halo('등장인물 없음', `400 14px ${SANS}`, C.muted, W/2, H/2); ctx.textAlign = 'left'; }
+    const ox = L.boxX, dt = top + L.dOff;
+    soft(); rrect(ctx, ox, dt, L.bw, L.bh, 22); ctx.fillStyle = C.soft; ctx.fill(); noShadow();
+    ctx.save(); rrect(ctx, ox, dt, L.bw, L.bh, 22); ctx.clip(); ctx.translate(ox, dt);
     for (const l of era.links){
       const g = geo(era, l); if (!g) continue;
       const k = KINDS[l.kind] || KINDS.etc;
@@ -1359,6 +1526,11 @@ function showModal(blob){
   $('#modalImg').src = url; openModal('#modal');
 }
 
+async function saveFile(blob, name, okMsg){
+  const inApp = /KAKAOTALK|Instagram|FBAN|FBAV|Line\//i.test(navigator.userAgent);
+  if (inApp && /\.png$/.test(name)){ showModal(blob); return true; }
+  downloadBlob(blob, name); if (okMsg) toast(okMsg); return true;
+}
 function downloadBlob(blob, name){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1381,7 +1553,7 @@ $('#exportBtn').onclick = async () => {
   btn.disabled = false; btn.textContent = 'PNG로 저장';
 };
 
-state.eras.forEach(e => e.people.forEach(clamp));
+state.eras.forEach(e => e.people.forEach(p => clamp(p, e)));
 renderAll();
 })();
 </script>
