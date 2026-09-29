@@ -6,15 +6,14 @@
 <meta name="description" content="세로 타임라인에 시점별 인물 관계도를 그리고, 캐릭터 카드와 함께 PNG 한 장으로 저장하는 웹 도구">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕸️</text></svg>">
 <title>인물 관계 연표</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 :root{
   --bg:#F7F7F9; --panel:#FFFFFF; --ink:#2B2B31; --muted:#6E6E78; --line:#C9C9D1;
   --edge:#E4E4EA; --soft:#F0F0F3; --accent:#48484F; --on-accent:#FFFFFF; --focus:#2F6FEB; --danger:#C0293F;
-  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
-  --serif:"Gowun Batang","AppleMyungjo","Batang","Noto Serif KR",serif;
+  --sans:"Pretendard Variable","Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  --serif:var(--sans);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
@@ -1250,8 +1249,8 @@ $('#themeBtn').onclick = () => { renderThemeUI(); openModal('#themeModal'); prev
 
 /* ---------- PNG export ---------- */
 const EX = {bg:'#F3F5F8', panel:'#FFFFFF', ink:'#1D2740', muted:'#667085', line:'#B9C3D2', edge:'#D6DCE5'};
-const SANS = '"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif';
-const SERIF = '"Gowun Batang","AppleMyungjo","Batang","Noto Serif KR",serif';
+const SANS = '"Pretendard Variable","Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif';
+const SERIF = SANS;
 
 function wrap(ctx, text, maxW, maxLines){
   const lines = []; let cur = '';
@@ -1280,7 +1279,8 @@ function lum(h){ const [r, g, b] = hexRgb(h); return (0.299*r + 0.587*g + 0.114*
 
 async function renderPNG(S = 2){
   try {
-    await Promise.all(['400 17px "Gowun Batang"','400 13px "IBM Plex Sans KR"','600 12px "IBM Plex Sans KR"','700 14px "IBM Plex Sans KR"'].map(f => document.fonts.load(f, '가나다')));
+    const txt = JSON.stringify(state, (k, v) => k === 'img' ? undefined : v) + '가나다@0_Z3ROo…#';
+    await Promise.all(['400','600','700'].map(w => document.fonts.load(`${w} 16px "Pretendard Variable"`, txt)));
     await document.fonts.ready;
   } catch(e){}
   const imgs = new Map();
