@@ -272,26 +272,24 @@ function wrapEst(text, maxW, maxLines){ const out = []; let cur = ''; for (const
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function seed(){
-  const P = (name, role, color, x, y) => ({id:uid(), name, role, color, x, y});
-  const a = P('서연','주인공',COLORS[0],130,62), b = P('도윤','소꿉친구',COLORS[2],350,56), c = P('하준','전학생',COLORS[5],240,150);
-  const L = (x, y, kind, label, dir, desc='') => ({id:uid(), a:x.id, b:y.id, kind, label, dir, desc});
-  const e1 = {id:uid(), when:'1장', title:'입학식', note:'하준이 서연의 반으로 전학 온다.', people:[a,b,c],
-    links:[L(a,b,'friend','소꿉친구','both'), L(c,a,'etc','관심','ab','첫날부터 서연을 눈여겨본다')]};
-  const e2 = JSON.parse(JSON.stringify(e1)); e2.id = uid(); e2.when='5장'; e2.title='축제 준비'; e2.note='학생회장 민지가 등장하고 도윤과 하준이 부딪친다.';
-  const m = P('민지','학생회장',COLORS[4],440,150); e2.people.push(m);
-  e2.links = [L(a,b,'friend','소꿉친구','both'), L(a,c,'friend','협력','both'), L(b,c,'enemy','경쟁','ab','축제 무대를 두고 신경전'), L(m,b,'family','남매','none')];
-  const e3 = JSON.parse(JSON.stringify(e2)); e3.id = uid(); e3.when='12장'; e3.title='졸업'; e3.note='';
-  e3.links = [L(a,c,'love','연인','both','졸업식 날 고백'), L(b,c,'friend','화해','both'), L(a,b,'friend','소꿉친구','both'), L(m,b,'family','남매','none')];
-  const cast = [
-    {id:uid(), name:'서연', age:'17세', color:COLORS[0], quote:'오늘도 잘 부탁해!', tags:'#밝음 #솔직함 #직진', traits:'오래된 소꿉친구 도윤을 가족처럼 여긴다\n생각보다 말이 먼저 나가는 편\n축제 준비위원'},
-    {id:uid(), name:'도윤', age:'17세', color:COLORS[2], quote:'…그래서, 뭐.', tags:'#무뚝뚝 #속깊음', traits:'민지의 쌍둥이 동생\n하준을 경계한다'},
-    {id:uid(), name:'하준', age:'18세', color:COLORS[5], quote:'여기 자리 비었어?', tags:'#전학생 #비밀', traits:'서울에서 전학 왔다\n사연이 있어 1년 늦게 입학했다'}];
-  return {title:'인물 관계 연표', cast, eras:[e1,e2,e3]};
+  const A = {id:uid(), name:'인물 A', color:COLORS[0], x:150, y:95};
+  const B = {id:uid(), name:'인물 B', color:COLORS[2], x:350, y:95};
+  return {
+    title:'',
+    cast:[
+      {id:uid(), name:'이름', color:COLORS[0], tags:'#키워드 #키워드 #키워드', traits:'특징 1\n특징 2\n특징 3'},
+      {id:uid(), name:'이름', color:COLORS[2], tags:'#키워드 #키워드 #키워드', traits:'특징 1\n특징 2\n특징 3'}],
+    eras:[
+      {id:uid(), when:'시점 1', title:'사건', note:'메모', people:[A, B],
+        links:[{id:uid(), a:A.id, b:B.id, kind:'friend', label:'관계', desc:'관계 설명', dir:'both'}]},
+      {id:uid(), when:'시점 2', title:'사건', note:'메모', people:[], links:[]}]
+  };
 }
 
 let state;
 try { state = JSON.parse(localStorage.getItem(KEY)); } catch(e){ state = null; }
-if (!state || !Array.isArray(state.eras)) state = seed();
+const isOldSample = st => st && Array.isArray(st.cast) && st.cast.some(c => c.name === '서연') && st.eras?.[0]?.title === '입학식';
+if (!state || !Array.isArray(state.eras) || isOldSample(state)){ const th = state?.theme; state = seed(); if (th) state.theme = th; }
 const THEMES = [
   {name:'모노', bg:'#FAFAFC', card:'#FFFFFF', text:'#26262B', accent:'#48484F'},
   {name:'안개', bg:'#E9EDF3', card:'#FFFFFF', text:'#1D2740', accent:'#1D2740'},
@@ -455,7 +453,7 @@ function buildEra(era, i){
     const act = e.target.dataset.act; if (!act) return;
     if (act === 'draw'){ addPerson(era); return; }
     if (act === 'hadd'){
-      (era.sides = era.sides || []).push({id:uid(), when:'', title:'', note:''});
+      (era.sides = era.sides || []).push({id:uid(), when:`시점 ${1 + (era.sides || []).length + 1}`, title:'사건', note:'메모'});
       save(); renderAll();
       const cols = eraEl(era)?.querySelectorAll('.hcol'); cols?.[cols.length-1]?.querySelector('.when')?.focus();
       return;
@@ -623,7 +621,7 @@ function freeSpot(era){
 function clamp(p){ p.x = Math.max(R+10, Math.min(W-R-10, p.x)); p.y = Math.max(R+10, Math.min(H-R-26, p.y)); }
 function addPerson(era, x, y){
   if (x == null) [x, y] = freeSpot(era);
-  const p = {id:uid(), name:'새 인물', color: COLORS[era.people.length % COLORS.length], x, y};
+  const p = {id:uid(), name:`인물 ${String.fromCharCode(65 + era.people.length % 26)}`, color: COLORS[era.people.length % COLORS.length], x, y};
   clamp(p);
   const wasEmpty = !era.people.length;
   era.people.push(p);
@@ -706,16 +704,16 @@ document.addEventListener('keydown', e => {
 });
 
 $('#addEraBtn').onclick = () => {
-  const era = {id:uid(), when:`${state.eras.length+1}번째 시점`, title:'', note:'', people:[], links:[]};
+  const era = {id:uid(), when:`시점 ${state.eras.length+1}`, title:'사건', note:'메모', people:[], links:[]};
   state.eras.push(era); save(); renderAll();
   const el = eraEl(era); el?.scrollIntoView({behavior:'smooth', block:'center'});
   const w = el?.querySelector('.when'); if (w){ w.focus({preventScroll:true}); w.select(); }
 };
 $('#resetBtn').onclick = () => {
   snapshot();
-  state = {title:'', theme: state.theme, cast:[], eras:[{id:uid(), when:'시작', title:'', note:'', people:[], links:[]}]};
+  state = {...seed(), theme: state.theme};
   sel = null; linking = null; save(); renderAll();
-  toast('빈 관계도로 새로 시작했어요.', true);
+  toast('기본 틀로 새로 시작했어요.', true);
 };
 
 /* ---------- cast ---------- */
@@ -763,7 +761,7 @@ function renderCast(){
   });
 }
 $('#addCastBtn').onclick = () => {
-  const c = {id:uid(), name:'', tags:'', traits:'', color: COLORS[state.cast.length % COLORS.length]};
+  const c = {id:uid(), name:'이름', tags:'#키워드 #키워드 #키워드', traits:'특징 1\n특징 2\n특징 3', color: COLORS[state.cast.length % COLORS.length]};
   state.cast.push(c); save(); renderCast();
   $(`.ccard[data-id="${c.id}"] .cname`)?.focus();
 };
@@ -852,29 +850,30 @@ async function renderPNG(S = 2){
 
   // --- measure cast cards ---
   const m = document.createElement('canvas').getContext('2d');
-  const HR = 92, RX = PAD + HR*2 + 56, RW = CW - PAD - RX;
+  const CCOLS = 2, CGX = 28, colW = (FULL - CGX*(CCOLS-1)) / CCOLS;
+  const HR = 54, ROFF = 8 + HR*2 + 22, RW = colW - ROFF;
   const tagsOf = c => String(c.tags || '').split(/[\s,]+/).map(t => t.replace(/^#+/, '')).filter(Boolean);
   const traitsOf = c => String(c.traits || '').split('\n').map(t => t.trim()).filter(Boolean);
   const layouts = state.cast.map(c => {
-    const traits = traitsOf(c);
-    m.font = `700 23px ${SANS}`;
+    m.font = `700 15px ${SANS}`;
     const tagLines = []; let cur = [], cw = 0;
     for (const t of tagsOf(c)){
       const w = m.measureText('#' + t).width;
-      if (cur.length && cw + 22 + w > RW - 26){ tagLines.push(cur); cur = []; cw = 0; }
-      cw += (cur.length ? 22 : 0) + w; cur.push('#' + t);
+      if (cur.length && cw + 14 + w > RW - 18){ tagLines.push(cur); cur = []; cw = 0; }
+      cw += (cur.length ? 14 : 0) + w; cur.push('#' + t);
     }
     if (cur.length) tagLines.push(cur);
     tagLines.length = Math.min(tagLines.length, 3);
-    const infoH = 70 + (tagLines.length ? tagLines.length*34 + 12 : 0);
+    const infoH = 46 + (tagLines.length ? tagLines.length*24 + 10 : 0);
     const topH = Math.max(HR*2 + 16, infoH);
-    m.font = `400 17px ${SANS}`;
-    const lines = traits.flatMap(t => wrap(m, t, FULL - 56, 3));
-    const ph = lines.length ? 22 + lines.length*32 + 8 : 0;
-    return {tagLines, infoH, lines, topH, ph, h: topH + (lines.length ? 22 + 40 + ph : 0)};
+    m.font = `400 14px ${SANS}`;
+    const lines = traitsOf(c).flatMap(t => wrap(m, t, colW - 40, 3));
+    const ph = lines.length ? lines.length*24 + 18 : 0;
+    return {tagLines, infoH, lines, topH, ph, h: topH + (lines.length ? 16 + 30 + ph : 0)};
   });
-  const CGAP = 48;
-  const castH = layouts.reduce((a, l) => a + l.h, 0) + Math.max(0, layouts.length-1)*CGAP;
+  const CGAP = 36, castRows = [];
+  for (let i = 0; i < layouts.length; i += CCOLS) castRows.push(Math.max(...layouts.slice(i, i + CCOLS).map(l => l.h)));
+  const castH = castRows.reduce((a, h) => a + h, 0) + Math.max(0, castRows.length-1)*CGAP;
   const used = Object.keys(KINDS).filter(k => state.eras.some(e => e.links.some(l => l.kind === k)));
   const legendY = PAD + (layouts.length ? castH + 56 : 0);
   const TL = legendY + (used.length ? 44 : 8);
@@ -937,39 +936,36 @@ async function renderPNG(S = 2){
     ctx.stroke();
   }
 
-  // --- cast cards ---
+  // --- cast cards (2 per row) ---
   let y = PAD;
   state.cast.forEach((c, i) => {
-    const L = layouts[i];
-    const cx = PAD + HR + 8, cy = y + HR + 8;
-    head(cx, cy, HR, c.img, c.color, c.name, 0);
-    // info block, vertically centered against the head
-    const infoH = L.infoH;
-    let iy = y + Math.max(0, (L.topH - infoH) / 2);
+    const L = layouts[i], col = i % CCOLS, row = Math.floor(i / CCOLS);
+    if (col === 0 && row > 0) y += castRows[row-1] + CGAP;
+    const x0 = PAD + col*(colW + CGX), RX = x0 + ROFF;
+    head(x0 + HR + 8, y + HR + 8, HR, c.img, c.color, c.name, 0);
+    let iy = y + Math.max(0, (L.topH - L.infoH) / 2);
     ctx.textAlign = 'left';
-    ctx.font = `700 50px ${SANS}`; ctx.fillStyle = C.ink;
-    const nm = c.name || '이름 없음'; ctx.fillText(wrap(ctx, nm, RW - 90, 1)[0], RX, iy + 54);
-    iy += 70;
+    ctx.font = `700 30px ${SANS}`; ctx.fillStyle = C.ink;
+    ctx.fillText(wrap(ctx, c.name || '이름 없음', RW, 1)[0], RX, iy + 34);
+    iy += 46;
     if (L.tagLines.length){
-      ctx.fillStyle = C.accent; ctx.fillRect(RX + 2, iy + 2, 6, L.tagLines.length*34 + 4);
-      ctx.font = `700 23px ${SANS}`; ctx.fillStyle = C.ink;
-      L.tagLines.forEach((row, r) => {
-        let tx = RX + 26;
-        for (const t of row){ ctx.fillText(t, tx, iy + 29 + r*34); tx += ctx.measureText(t).width + 22; }
+      ctx.fillStyle = C.accent; ctx.fillRect(RX + 1, iy + 1, 4, L.tagLines.length*24 + 2);
+      ctx.font = `700 15px ${SANS}`; ctx.fillStyle = C.ink;
+      L.tagLines.forEach((tl, r) => {
+        let tx = RX + 16;
+        for (const t of tl){ ctx.fillText(t, tx, iy + 19 + r*24); tx += ctx.measureText(t).width + 14; }
       });
     }
-    // traits
     if (L.lines.length){
-      const ty = y + L.topH + 22;
-      ctx.font = `700 21px ${SANS}`;
-      const tabW = ctx.measureText('특징').width + 56;
-      topRound(PAD, ty, tabW, 40, 14); ctx.fillStyle = C.accent; ctx.fill();
-      ctx.fillStyle = C.onAccent; ctx.fillText('특징', PAD + 28, ty + 28);
-      soft(20, 5); panelTL(PAD, ty + 40, FULL, L.ph, 18); ctx.fillStyle = C.soft; ctx.fill(); noShadow();
-      ctx.font = `400 17px ${SANS}`; ctx.fillStyle = C.ink;
-      L.lines.forEach((ln, k) => ctx.fillText(ln, PAD + 28, ty + 40 + 22 + 22 + k*32));
+      const ty = y + L.topH + 16;
+      ctx.font = `700 15px ${SANS}`;
+      const tabW = ctx.measureText('특징').width + 36;
+      topRound(x0, ty, tabW, 30, 10); ctx.fillStyle = C.accent; ctx.fill();
+      ctx.fillStyle = C.onAccent; ctx.fillText('특징', x0 + 18, ty + 21);
+      soft(16, 4); panelTL(x0, ty + 30, colW, L.ph, 14); ctx.fillStyle = C.soft; ctx.fill(); noShadow();
+      ctx.font = `400 14px ${SANS}`; ctx.fillStyle = C.ink;
+      L.lines.forEach((ln, k) => ctx.fillText(ln, x0 + 20, ty + 30 + 28 + k*24));
     }
-    y += L.h + CGAP;
   });
 
   // --- legend ---
