@@ -106,6 +106,8 @@ input,textarea{font:inherit;color:inherit}
 .node{cursor:grab}
 .node:active{cursor:grabbing}
 .link{cursor:pointer}
+.lbl-hit{cursor:move}
+.lbl-rs{cursor:ew-resize}
 .svg-name{font:600 13px var(--sans);fill:var(--ink);paint-order:stroke;stroke:var(--soft);stroke-width:4px;stroke-linejoin:round}
 .svg-initial{font:700 17px var(--sans);fill:#fff}
 .svg-lbl{font:600 12px var(--sans);paint-order:stroke;stroke:var(--soft);stroke-width:5px;stroke-linejoin:round}
@@ -143,7 +145,7 @@ input,textarea{font:inherit;color:inherit}
 .rich:empty::before{content:attr(data-ph);color:var(--muted);opacity:.6;pointer-events:none}
 .rich b{font-weight:700;color:var(--ink)}
 .rich mark,.fo-desc mark{background:var(--hl,var(--accent));color:var(--on-hl,#fff);padding:0 3px;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-.fo-desc{font:400 11px/1.35 var(--sans);color:var(--muted);text-align:center;text-shadow:0 0 3px var(--soft),0 0 3px var(--soft),0 0 2px var(--soft);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.fo-desc{font:400 11px/1.35 var(--sans);color:var(--muted);text-align:center;text-shadow:0 0 3px var(--soft),0 0 3px var(--soft),0 0 2px var(--soft);word-break:break-word}
 .fo-desc b{font-weight:700;color:var(--ink)}
 .fo-desc mark{text-shadow:none}
 .heads{display:flex;flex-wrap:wrap;gap:8px}
@@ -273,7 +275,7 @@ input,textarea{font:inherit;color:inherit}
       <li>맨 위 <b>인물 카드</b>에 두상, 이름, 키워드, 특징을 적어 두세요. 키워드는 띄어쓰기로 구분해요. 두상 원을 누르면 PNG를 넣을 수 있어요.</li>
       <li>왼쪽 타임라인에 <b>시점</b>을 쌓고, 필요한 시점에만 ‘관계도 그리기’로 인물과 관계를 그려요. 관계도가 없는 시점은 글만 넓게 들어가요. ‘복제’로 이전 시점을 이어서 만들 수 있어요.</li>
       <li><b>인물 추가</b>를 누르거나 빈 곳을 두 번 누르면 인물이 생겨요. 끌어서 옮기고, 누르면 이름과 두상(없으면 색)을 정하거나 등장인물 카드에서 불러올 수 있어요.</li>
-      <li>인물을 고르고 <b>관계 잇기</b>를 누른 뒤 상대를 누르면 선이 생겨요. 선을 누르면 관계 이름, 설명, 종류, 방향을 정해요.</li>
+      <li>인물을 고르고 <b>관계 잇기</b>를 누른 뒤 상대를 누르면 선이 생겨요. 선을 누르면 관계 이름, 설명, 종류, 방향을 정해요. 관계 글자는 끌어서 옮기고, 오른쪽 동그라미를 끌어 설명 폭을 바꿀 수 있어요. 두 번 누르면 제자리로 돌아가요.</li>
       <li>사건, 메모, 특징, 관계 설명은 글자를 드래그한 뒤 위에 뜨는 <b>굵게</b>나 <b>배경</b>을 누르면 꾸밀 수 있어요. 편집 화면에서도 바로 굵게, 배경색으로 보이고 PNG에도 그대로 나와요.</li>
       <li>맨 아래에 <b>커미션 크레딧</b>을 적을 수 있어요.</li>
       <li>관계도 오른쪽 아래 모서리를 끌면 크기가 바뀌어요. 관계도 윗부분 막대를 끌면 위치를 옮길 수 있어요. 가로 시점 사이에 넣거나 시점 아래로 내릴 수 있고, <b>왼쪽, 아래, 오른쪽</b> 버튼으로도 바꿀 수 있어요. 시점 글 영역은 관계도에 맞춰 자동으로 넓어지거나 좁아져요.</li>
@@ -492,12 +494,7 @@ function richWrap(ctx, text, maxW, maxLines, size, base = 400){
     }
     lines.push(cur);
   }
-  if (lines.length > maxLines){
-    lines.length = maxLines;
-    const last = lines[maxLines - 1];
-    if (last.length) last[last.length - 1] = {...last[last.length - 1], ch: '…'};
-  }
-  return lines;
+  return lines; // 출력에서는 줄 수를 자르지 않음
 }
 function drawRich(ctx, line, x, y, size, base, color, opt = {}){
   const segs = [];
@@ -944,12 +941,19 @@ function renderDiagram(era, el = eraEl(era)){
     if (l.dir==='ab'||l.dir==='both') arrows += `<polygon points="${arrowPts(g.x2,g.y2,g.endDir).join(' ')}" fill="${k.color}"/>`;
     if (l.dir==='ba'||l.dir==='both') arrows += `<polygon points="${arrowPts(g.x1,g.y1,g.startDir).join(' ')}" fill="${k.color}"/>`;
     const descHTML = (l.desc || '').trim() ? markupToHTML((l.desc || '').replace(/\n/g, ' ')) : '';
+    const lp = {x: g.lx + (l.ox || 0), y: g.ly + (l.oy || 0)}, dw = l.dw || 150;
+    const descH = descHTML ? wrapEst(plain(l.desc), dw - 4, 1e9).length * 15 : 0;
+    const hw = Math.max(dw, textW(labelOf(l)) + 18) + 8, hh = 22 + (descHTML ? descH + 8 : 0);
+    const leader = Math.hypot(l.ox || 0, l.oy || 0) > 18 ? `<line x1="${g.lx}" y1="${g.ly}" x2="${lp.x}" y2="${lp.y}" stroke="${k.color}" stroke-opacity=".45" stroke-width="1" stroke-dasharray="2 3"/>` : '';
     out += `<g class="link" data-id="${l.id}">
       <path d="${d}" stroke="transparent" stroke-width="18" fill="none"/>
       <path d="${d}" stroke="${k.color}" stroke-width="${on ? 3 : 1.5}" fill="none" stroke-dasharray="${k.dash}" stroke-opacity="${on ? 1 : .8}"/>
       ${arrows}
-      <text class="svg-lbl" x="${g.lx}" y="${g.ly + 4}" text-anchor="middle" fill="${k.color}">${esc(labelOf(l))}</text>
-      ${descHTML ? `<foreignObject x="${g.lx - 85}" y="${g.ly + 10}" width="170" height="34" style="pointer-events:none"><div xmlns="http://www.w3.org/1999/xhtml" class="fo-desc">${descHTML}</div></foreignObject>` : ''}
+      ${leader}
+      <text class="svg-lbl" x="${lp.x}" y="${lp.y + 4}" text-anchor="middle" fill="${k.color}">${esc(labelOf(l))}</text>
+      ${descHTML ? `<foreignObject x="${lp.x - dw/2}" y="${lp.y + 10}" width="${dw}" height="${descH + 6}" style="pointer-events:none;overflow:visible"><div xmlns="http://www.w3.org/1999/xhtml" class="fo-desc">${descHTML}</div></foreignObject>` : ''}
+      <rect class="lbl-hit" data-id="${l.id}" x="${lp.x - hw/2}" y="${lp.y - 12}" width="${hw}" height="${hh}" rx="6" fill="transparent" ${on ? 'stroke="var(--line)" stroke-dasharray="3 3"' : ''}/>
+      ${on && descHTML ? `<circle class="lbl-rs" data-id="${l.id}" cx="${lp.x + hw/2}" cy="${lp.y + 10 + descH/2}" r="5.5" fill="var(--panel)" stroke="${k.color}" stroke-width="1.5"/>` : ''}
     </g>`;
   }
   for (const p of era.people){
@@ -963,7 +967,7 @@ function renderDiagram(era, el = eraEl(era)){
         ? `<clipPath id="${cid}"><circle r="${R}"/></clipPath><circle r="${R}" fill="var(--soft)"/><image href="${p.img}" x="${-R}" y="${-R}" width="${2*R}" height="${2*R}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid})"/><circle r="${R}" fill="none" stroke="var(--edge)" stroke-width="1"/>`
         : `<circle r="${R}" fill="${p.color}"/><text class="svg-initial" y="6" text-anchor="middle">${esc(initial)}</text>`}
       <text class="svg-name" y="${R+18}" text-anchor="middle">${esc(p.name || '이름 없음')}</text>
-      ${(p.desc || '').trim() ? `<foreignObject x="-62" y="${R+23}" width="124" height="32" style="pointer-events:none"><div xmlns="http://www.w3.org/1999/xhtml" class="fo-desc">${markupToHTML(p.desc.replace(/\n/g, ' '))}</div></foreignObject>` : ''}
+      ${(p.desc || '').trim() ? `<foreignObject x="-62" y="${R+23}" width="124" height="${wrapEst(plain(p.desc), 120, 1e9).length*15 + 6}" style="pointer-events:none;overflow:visible"><div xmlns="http://www.w3.org/1999/xhtml" class="fo-desc">${markupToHTML(p.desc.replace(/\n/g, ' '))}</div></foreignObject>` : ''}
     </g>`;
   }
   svg.innerHTML = out;
@@ -977,7 +981,7 @@ function renderInspector(era, el = eraEl(era)){
     const p = era.people.find(x => x.id === sel.id);
     if (!p){ sel = null; box.className='inspector'; return; }
     box.innerHTML = `
-      <label class="field">이름<input data-k="name" value="${esc(p.name)}" maxlength="20"></label>
+      <label class="field">이름<input data-k="name" value="${esc(p.name)}" maxlength="40"></label>
       <label class="field" style="flex:2 1 220px">간단한 설정 <span>(비워도 돼요)</span>${richField(p.desc, {k:"desc", ph:"예: 순사부장", label:"간단한 설정"})}</label>
       <div class="field" style="flex:0 0 auto">두상 이미지<div class="head-row">
         ${p.img ? `<img class="head-prev" src="${p.img}" alt="">` : ''}
@@ -1020,9 +1024,10 @@ function renderInspector(era, el = eraEl(era)){
       <label class="field" style="flex:2 1 240px">관계 설명${richField(l.desc, {k:"desc", ph:"관계 설명", label:"관계 설명"})}</label>
       <div class="field" style="flex:1 1 100%">종류<div class="chips">${Object.entries(KINDS).map(([k,v]) => `<button class="chip" data-kind="${k}" aria-pressed="${l.kind===k}"><i style="background:${v.color}"></i>${v.label}</button>`).join('')}</div></div>
       <div class="field" style="flex:1 1 100%">방향 <span>(A: ${esc(A?.name)}, B: ${esc(B?.name)})</span><div class="chips">${DIRS.map(([d,t]) => `<button class="chip" data-dir="${d}" aria-pressed="${l.dir===d}">${t}</button>`).join('')}</div></div>
-      <div class="ins-actions"><button class="btn danger" data-act="del">관계 삭제</button></div>`;
+      <div class="ins-actions"><button class="btn" data-act="lblreset" title="관계 글자를 선 가운데로 되돌려요">글자 위치 초기화</button><button class="btn danger" data-act="del">관계 삭제</button></div>`;
     box.querySelector('input').addEventListener('input', e => { l.label = e.target.value; save(); renderDiagram(era, el); });
     box.querySelector('[data-k="desc"]').addEventListener('input', e => { l.desc = e.target.value; save(); renderDiagram(era, el); });
+    box.querySelector('[data-act="lblreset"]').onclick = () => { delete l.ox; delete l.oy; delete l.dw; save(); renderDiagram(era, el); };
     box.querySelectorAll('[data-kind]').forEach(b => b.onclick = () => { l.kind = b.dataset.kind; save(); paintEra(era, el); });
     box.querySelectorAll('[data-dir]').forEach(b => b.onclick = () => { l.dir = b.dataset.dir; save(); paintEra(era, el); });
     box.querySelector('[data-act="del"]').onclick = () => {
@@ -1067,7 +1072,19 @@ function wireSvg(era, svg){
   const toLocal = e => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
   let drag = null;
   svg.addEventListener('touchstart', e => { if (e.target.closest('.node')) e.preventDefault(); }, {passive:false});
+  let lbl = null;
   svg.addEventListener('pointerdown', e => {
+    const rs = e.target.closest('.lbl-rs'), lh = e.target.closest('.lbl-hit');
+    if (rs || lh){
+      const l = era.links.find(x => x.id === (rs || lh).dataset.id); if (!l) return;
+      const pt = toLocal(e);
+      lbl = rs ? {mode:'rs', l, sx: pt.x, dw0: l.dw || 150, id: e.pointerId} : {mode:'mv', l, sx: pt.x, sy: pt.y, ox0: l.ox || 0, oy0: l.oy || 0, moved: false, id: e.pointerId};
+      svg.setPointerCapture(e.pointerId);
+      const prev = sel && sel.era !== era.id ? eraById(sel.era) : null;
+      if (!(sel && sel.type === 'link' && sel.id === l.id)){ sel = {era: era.id, type:'link', id: l.id}; linking = null; paintEra(era); if (prev) paintEra(prev); }
+      e.preventDefault();
+      return;
+    }
     const node = e.target.closest('.node'), link = e.target.closest('.link');
     const prev = sel && sel.era !== era.id ? eraById(sel.era) : null;
     if (node){
@@ -1083,6 +1100,20 @@ function wireSvg(era, svg){
     }
   });
   svg.addEventListener('pointermove', e => {
+    if (lbl && lbl.id === e.pointerId){
+      const pt = toLocal(e), b = boxOf(era), l = lbl.l;
+      if (lbl.mode === 'rs'){ l.dw = Math.round(Math.max(60, Math.min(Math.min(b.w - 10, 420), lbl.dw0 + 2*(pt.x - lbl.sx)))); }
+      else {
+        const dx = pt.x - lbl.sx, dy = pt.y - lbl.sy;
+        if (!lbl.moved && Math.hypot(dx, dy) < 3) return;
+        lbl.moved = true;
+        const g = geo(era, l); if (!g) return;
+        l.ox = Math.round(Math.max(10, Math.min(b.w - 10, g.lx + lbl.ox0 + dx)) - g.lx);
+        l.oy = Math.round(Math.max(12, Math.min(b.h - 12, g.ly + lbl.oy0 + dy)) - g.ly);
+      }
+      renderDiagram(era);
+      return;
+    }
     if (!drag || drag.id !== e.pointerId) return;
     const pt = toLocal(e), dx = pt.x - drag.sx, dy = pt.y - drag.sy;
     if (!drag.moved && Math.hypot(dx, dy) < 4) return;
@@ -1108,9 +1139,11 @@ function wireSvg(era, svg){
     }
     if (prev) paintEra(prev);
   };
-  svg.addEventListener('pointerup', end);
+  svg.addEventListener('pointerup', e => { if (lbl && lbl.id === e.pointerId){ const ch = lbl.mode === 'rs' || lbl.moved; lbl = null; if (ch) save(); return; } end(e); });
   svg.addEventListener('pointercancel', e => { if (drag){ drag = null; save(); } });
   svg.addEventListener('dblclick', e => {
+    const lh = e.target.closest('.lbl-hit');
+    if (lh){ const l = era.links.find(x => x.id === lh.dataset.id); if (l){ delete l.ox; delete l.oy; save(); renderDiagram(era); } return; }
     if (e.target.closest('.node, .link')) return;
     const pt = toLocal(e); addPerson(era, pt.x, pt.y);
   });
@@ -1170,7 +1203,7 @@ function renderCast(){
         <input type="file" accept="image/png,image/*" aria-label="${esc(c.name)} 두상 이미지 넣기">
       </label>
       <div class="cright">
-        <div class="cline"><input class="cname" data-k="name" value="${esc(c.name)}" placeholder="이름" maxlength="20" aria-label="이름"></div>
+        <div class="cline"><input class="cname" data-k="name" value="${esc(c.name)}" placeholder="이름" maxlength="60" aria-label="이름"></div>
         <div class="tags"><input data-k="tags" value="${esc(c.tags)}" placeholder="#키워드 #키워드 #키워드" maxlength="80" aria-label="키워드"></div>
       </div>
       <div class="ctraits">
@@ -1265,7 +1298,6 @@ function wrap(ctx, text, maxW, maxLines){
     }
     lines.push(cur);
   }
-  if (lines.length > maxLines){ const out = lines.slice(0, maxLines); out[maxLines-1] = out[maxLines-1].replace(/.$/, '…'); return out; }
   return lines;
 }
 function rrect(ctx, x, y, w, h, r){
@@ -1311,13 +1343,14 @@ async function renderPNG(S = 2){
       cw += (cur.length ? 14 : 0) + w; cur.push('#' + t);
     }
     if (cur.length) tagLines.push(cur);
-    tagLines.length = Math.min(tagLines.length, 3);
-    const infoH = 46 + (tagLines.length ? tagLines.length*24 + 10 : 0);
+    m.font = `700 30px ${SANS}`;
+    const nameLines = wrap(m, plain(c.name) || '이름 없음', RW, 1e9);
+    const infoH = 46 + (nameLines.length - 1)*36 + (tagLines.length ? tagLines.length*24 + 10 : 0);
     const topH = Math.max(HR*2 + 16, infoH);
     m.font = `400 14px ${SANS}`;
-    const lines = traitsOf(c).flatMap(t => richWrap(m, t, colW - 40, 3, 14, 400));
+    const lines = traitsOf(c).flatMap(t => richWrap(m, t, colW - 40, 1e9, 14, 400));
     const ph = lines.length ? lines.length*24 + 18 : 0;
-    return {tagLines, infoH, lines, topH, ph, h: topH + (lines.length ? 16 + 30 + ph : 0)};
+    return {tagLines, nameLines, infoH, lines, topH, ph, h: topH + (lines.length ? 16 + 30 + ph : 0)};
   });
   const CGAP = 36, castRows = [];
   for (let i = 0; i < layouts.length; i += CCOLS) castRows.push(Math.max(...layouts.slice(i, i + CCOLS).map(l => l.h)));
@@ -1327,18 +1360,21 @@ async function renderPNG(S = 2){
   const TL = legendY + (used.length ? 44 : 8);
   const TW = GUT - 26 - 30, EW = FULL - 26;
   const HGAP = 28;
-  const colLay = (item, tw, maxNote) => {
-    const tl = richWrap(m, item.title || '', tw, 2, 17, 700).filter(l => l.length);
+  const colLay = (item, tw, maxNote, k = 0, ei = 0) => {
+    m.font = `700 17px ${SANS}`;
+    const wl = wrap(m, plain(item.when) || (k ? ' ' : `${ei+1}번째 시점`), tw - 30, 1e9);
+    const tl = richWrap(m, item.title || '', tw, 1e9, 17, 700).filter(l => l.length);
     m.font = `400 13px ${SANS}`;
     const nl = item.note ? richWrap(m, item.note, tw, maxNote, 13, 400) : [];
-    const textH = 40 + (tl.length ? 12 + tl.length*25 : 0) + (nl.length ? 8 + nl.length*20 : 0);
-    return {item, tl, nl, textH};
+    const bodyH = (tl.length ? 12 + tl.length*25 : 0) + (nl.length ? 8 + nl.length*20 : 0);
+    return {item, wl, tl, nl, bodyH};
   };
-  const eraLay = state.eras.map(era => {
+  const eraLay = state.eras.map((era, ei) => {
     const M = eraMode(era), bx = boxOf(era), full = M.mode !== 'none';
     const items = [era, ...(era.sides || [])], n = items.length, cw = M.cw;
-    const cols = items.map(it => colLay(it, cw, 12));
-    const rowH = Math.max(44, ...cols.map(c => c.textH));
+    const cols = items.map((it, k) => colLay(it, cw, 1e9, k, ei));
+    const tabH = 40 + (Math.max(...cols.map(c => c.wl.length)) - 1)*22;
+    const rowH = Math.max(44, ...cols.map(c => tabH + c.bodyH));
     const tabX = PAD + 26, colX = [];
     let boxX = tabX, dOff = 0, h = rowH;
     if (M.mode === 'row'){
@@ -1352,7 +1388,7 @@ async function renderPNG(S = 2){
       for (let k = 0; k < n; k++) colX.push(tabX + k*(cw + BGAP));
       if (M.mode === 'below'){ boxX = tabX + Math.max(0, Math.min(TLW - bx.w, bx.bx || 0)); dOff = rowH + 20; h = dOff + bx.h; }
     }
-    return {full, cols, cw, h, dOff, colX, boxX, bw: bx.w, bh: bx.h};
+    return {full, cols, cw, tabH, h, dOff, colX, boxX, bw: bx.w, bh: bx.h};
   });
   const tops = []; let acc = TL;
   eraLay.forEach(l => { tops.push(acc); acc += l.h + GAP; });
@@ -1402,8 +1438,8 @@ async function renderPNG(S = 2){
     let iy = y + Math.max(0, (L.topH - L.infoH) / 2);
     ctx.textAlign = 'left';
     ctx.font = `700 30px ${SANS}`; ctx.fillStyle = C.ink;
-    ctx.fillText(wrap(ctx, plain(c.name) || '이름 없음', RW, 1)[0], RX, iy + 34);
-    iy += 46;
+    L.nameLines.forEach((ln, k) => ctx.fillText(ln, RX, iy + 34 + k*36));
+    iy += 46 + (L.nameLines.length - 1)*36;
     if (L.tagLines.length){
       ctx.fillStyle = C.accent; ctx.fillRect(RX + 1, iy + 1, 4, L.tagLines.length*24 + 2);
       ctx.font = `700 15px ${SANS}`; ctx.fillStyle = C.ink;
@@ -1447,16 +1483,19 @@ async function renderPNG(S = 2){
     ctx.fillStyle = C.accent; ctx.fillRect(spineX - 2, top + 18, Math.max(...L.colX) - spineX + 2, 4);
     if (state.eras.length > 1){ ctx.beginPath(); ctx.arc(spineX, top + 20, 5, 0, Math.PI*2); ctx.fill(); }
     ctx.font = `700 17px ${SANS}`;
-    const whens = L.cols.map((c, k) => wrap(ctx, plain(c.item.when) || (k ? '' : `${i+1}번째 시점`), L.cw - 30, 1)[0] || ' ');
-    const rowW = Math.min(L.cw, Math.max(40, ...whens.map(t => ctx.measureText(t).width + 30)));
+    const lineW = c => Math.max(...c.wl.map(t => ctx.measureText(t).width));
+    const rowW = Math.min(L.cw, Math.max(40, ...L.cols.map(c => lineW(c) + 30)));
     L.cols.forEach((c, k) => {
       const cx = L.colX[k];
       ctx.font = `700 17px ${SANS}`;
-      const when = whens[k], ww = L.cols.length > 1 ? rowW : Math.max(40, ctx.measureText(when).width + 30);
-      rrect(ctx, cx, top, ww, 40, 12); ctx.fillStyle = C.accent; ctx.fill();
+      const multi = L.cols.length > 1, ww = multi ? rowW : Math.min(L.cw, Math.max(40, lineW(c) + 30));
+      rrect(ctx, cx, top, ww, L.tabH, 12); ctx.fillStyle = C.accent; ctx.fill();
       ctx.fillStyle = C.onAccent;
-      if (L.cols.length > 1){ ctx.textAlign = 'center'; ctx.fillText(when, cx + ww/2, top + 26); ctx.textAlign = 'left'; } else ctx.fillText(when, cx + 15, top + 26);
-      let yy = top + 70;
+      const ty0 = top + 26 + (L.tabH - 40 - (c.wl.length - 1)*22) / 2;
+      c.wl.forEach((t, j) => {
+        if (multi){ ctx.textAlign = 'center'; ctx.fillText(t, cx + ww/2, ty0 + j*22); ctx.textAlign = 'left'; } else ctx.fillText(t, cx + 15, ty0 + j*22);
+      });
+      let yy = top + L.tabH + 30;
       ctx.font = `700 17px ${SANS}`; ctx.fillStyle = C.ink;
       for (const ln of c.tl){ drawRich(ctx, ln, cx, yy, 17, 700, C.ink, {hl: C.hl, onHl: C.onHl}); yy += 25; }
       if (c.nl.length){
@@ -1484,20 +1523,25 @@ async function renderPNG(S = 2){
     for (const l of era.links){
       const g = geo(era, l); if (!g) continue;
       const k = KINDS[l.kind] || KINDS.etc, lbl = labelOf(l);
+      const lx = g.lx + (l.ox || 0), ly = g.ly + (l.oy || 0), dw = l.dw || 150;
+      if (Math.hypot(l.ox || 0, l.oy || 0) > 18){
+        ctx.save(); ctx.globalAlpha = .45; ctx.strokeStyle = k.color; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(g.lx, g.ly); ctx.lineTo(lx, ly); ctx.stroke(); ctx.restore();
+      }
       ctx.font = `600 11.5px ${SANS}`;
       const w = ctx.measureText(lbl).width + 18;
-      rrect(ctx, g.lx - w/2, g.ly - 10, w, 20, 10); ctx.fillStyle = C.card; ctx.fill();
+      rrect(ctx, lx - w/2, ly - 10, w, 20, 10); ctx.fillStyle = C.card; ctx.fill();
       ctx.globalAlpha = dark ? .25 : .12; ctx.fillStyle = k.color; ctx.fill(); ctx.globalAlpha = 1;
-      ctx.fillStyle = dark ? mix(k.color, '#FFFFFF', .35) : k.color; ctx.fillText(lbl, g.lx, g.ly + 4);
+      ctx.fillStyle = dark ? mix(k.color, '#FFFFFF', .35) : k.color; ctx.fillText(lbl, lx, ly + 4);
       ctx.font = `400 11px ${SANS}`;
-      richWrap(ctx, (l.desc || '').replace(/\n/g, ' '), 150, 2, 11, 400).filter(q => q.length)
-        .forEach((ln, j) => drawRich(ctx, ln, g.lx, g.ly + 24 + j*15, 11, 400, C.muted, {align:'center', halo: C.soft, hl: C.hl, onHl: C.onHl, boldColor: C.ink}));
+      richWrap(ctx, (l.desc || '').replace(/\n/g, ' '), dw - 4, 1e9, 11, 400).filter(q => q.length)
+        .forEach((ln, j) => drawRich(ctx, ln, lx, ly + 24 + j*15, 11, 400, C.muted, {align:'center', halo: C.soft, hl: C.hl, onHl: C.onHl, boldColor: C.ink}));
     }
     for (const p of era.people){
       head(p.x, p.y, R, p.img, p.color, p.name);
       ctx.textAlign = 'center';
       halo(p.name || '이름 없음', `700 13px ${SANS}`, C.ink, p.x, p.y + R + 19, 5);
-      if ((p.desc || '').trim()) richWrap(ctx, p.desc.replace(/\n/g, ' '), 120, 2, 11, 400).filter(q => q.length)
+      if ((p.desc || '').trim()) richWrap(ctx, p.desc.replace(/\n/g, ' '), 120, 1e9, 11, 400).filter(q => q.length)
         .forEach((ln, j) => drawRich(ctx, ln, p.x, p.y + R + 35 + j*15, 11, 400, C.muted, {align:'center', halo: C.soft, hl: C.hl, onHl: C.onHl, boldColor: C.ink}));
     }
     ctx.textAlign = 'left';
