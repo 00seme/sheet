@@ -57,21 +57,26 @@ input,textarea{font:inherit;color:inherit}
 .era:first-child::before{top:20px}
 .era:last-child::before{bottom:auto;height:22px}
 .era:only-child::before{display:none}
-.era.empty{grid-template-columns:1fr}
+.era.wide{grid-template-columns:1fr}
+.era.wide:not(.empty) .panel{margin:14px 0 0 300px}
+.era-actions .hadd{font-weight:600;color:var(--ink)}
 .era.empty .panel{display:none}
 .hcol{position:relative;display:flex;flex-direction:column;gap:4px;min-width:0}
-.era.empty .hrow{display:grid;grid-template-columns:repeat(var(--cols,1),minmax(150px,1fr));gap:24px;overflow-x:auto;padding-bottom:2px}
-.era.empty .hcol > *{max-width:100%}
-.era.empty .hcol:not(:last-child)::after{content:"";position:absolute;left:0;right:-24px;top:17px;height:4px;background:var(--accent);z-index:0}
+.era.wide .hrow{display:grid;grid-template-columns:repeat(var(--cols,1),minmax(150px,1fr));gap:24px;overflow-x:auto;padding-bottom:2px}
+.era.wide .hcol > *{max-width:100%}
+.era.wide .hcol:not(:last-child)::after{content:"";position:absolute;left:0;right:-24px;top:17px;height:4px;background:var(--accent);z-index:0}
 .hcol .when{position:relative;z-index:1}
-.era.empty .hrow[style*="--cols:2"] .when,.era.empty .hrow[style*="--cols:3"] .when,.era.empty .hrow[style*="--cols:4"] .when{text-align:center}
+.era.wide .hrow[style*="--cols:2"] .when,.era.wide .hrow[style*="--cols:3"] .when,.era.wide .hrow[style*="--cols:4"] .when{text-align:center}
 .side-del{align-self:flex-start;border:0;background:none;padding:2px 0;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
 .side-del:hover{color:var(--danger)}
 .era-actions .draw{display:none;font-weight:600;color:var(--ink)}
 .era.empty .era-actions .draw{display:inline}
 .gutter{position:relative;padding:2px 24px 0 30px;display:flex;flex-direction:column;gap:4px}
 .dot{position:absolute;left:6px;top:18px;width:24px;height:4px;background:var(--accent)}
-.gutter input,.gutter textarea{border:0;background:transparent;width:100%;padding:2px 4px;margin-left:-4px;border-radius:4px;resize:none}
+.gutter .rich{outline:none}
+.gutter input,.gutter textarea,.gutter .rich{border:0;background:transparent;width:100%;padding:2px 4px;margin-left:-4px;border-radius:4px;resize:none}
+.gutter .rich:hover{background:var(--soft)}
+.gutter .rich:focus{background:var(--panel);outline:1px solid var(--line)}
 .gutter input:hover,.gutter textarea:hover{background:var(--soft)}
 .gutter input:focus,.gutter textarea:focus{background:var(--panel);outline:1px solid var(--line)}
 .gutter .when{field-sizing:content;width:auto;align-self:flex-start;min-width:64px;max-width:100%;margin-left:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;line-height:1.4;padding:7px 14px;border-radius:10px}
@@ -100,6 +105,8 @@ input,textarea{font:inherit;color:inherit}
 .svg-initial{font:700 17px var(--sans);fill:#fff}
 .svg-lbl{font:600 12px var(--sans);paint-order:stroke;stroke:var(--soft);stroke-width:5px;stroke-linejoin:round}
 .svg-desc{font:400 11px var(--sans);fill:var(--muted);paint-order:stroke;stroke:var(--soft);stroke-width:5px;stroke-linejoin:round}
+.field .rich{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:6px 8px;font-size:14px;color:var(--ink);min-height:52px;line-height:1.5}
+.field .rich:focus{outline:2px solid var(--focus);outline-offset:1px}
 .field textarea{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:6px 8px;font-size:14px;color:var(--ink);width:100%;resize:vertical;min-height:52px}
 .head-row{display:flex;align-items:center;gap:10px}
 .head-prev{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--panel);border:1px solid var(--line)}
@@ -122,7 +129,23 @@ input,textarea{font:inherit;color:inherit}
 
 .add-era{display:grid;grid-template-columns:300px 1fr;margin-top:4px}
 .add-era .btn{grid-column:2;justify-self:start}
-.credit{margin:40px 0 0;text-align:right;font-size:13px;font-weight:600;color:var(--muted)}
+.credit{margin:40px 0 0;display:flex;justify-content:flex-end;align-items:center;gap:12px;font-size:13px;font-weight:600;color:var(--muted)}
+.credit input{border:0;border-bottom:1px dashed var(--line);background:transparent;color:inherit;font:inherit;text-align:right;width:min(280px,60vw);padding:2px 4px}
+.credit input:focus{outline:none;border-bottom-color:var(--accent)}
+.credit input::placeholder{color:var(--muted);opacity:.6;font-weight:400}
+.credit-sep{width:1px;height:14px;background:var(--line)}
+.rich{white-space:pre-wrap;word-break:break-word;cursor:text;min-height:1.5em}
+.rich:empty::before{content:attr(data-ph);color:var(--muted);opacity:.6;pointer-events:none}
+.rich b{font-weight:700;color:var(--ink)}
+.rich mark,.fo-desc mark{background:var(--hl,var(--accent));color:var(--on-hl,#fff);padding:0 3px;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.fo-desc{font:400 11px/1.35 var(--sans);color:var(--muted);text-align:center;text-shadow:0 0 3px var(--soft),0 0 3px var(--soft),0 0 2px var(--soft);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.fo-desc b{font-weight:700;color:var(--ink)}
+.fo-desc mark{text-shadow:none}
+.rtb{position:absolute;z-index:15;display:none;gap:2px;padding:3px;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.rtb.on{display:flex}
+.rtb button{border:0;background:none;padding:4px 9px;border-radius:5px;font-size:12px;color:var(--ink)}
+.rtb button:hover{background:var(--soft)}
+.rtb-hl{background:var(--hl,var(--accent));color:var(--on-hl,#fff);padding:0 4px;border-radius:3px;font-weight:600}
 .board-empty{padding:40px 0;color:var(--muted)}
 
 /* toast + modal */
@@ -146,6 +169,7 @@ input,textarea{font:inherit;color:inherit}
 .chead input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
 .chead:focus-within{outline:2px solid var(--focus);outline-offset:3px}
 .cright{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ccard .rich{padding:2px 6px;border-radius:6px}
 .ccard input,.ccard textarea{border:0;background:transparent;padding:2px 6px;border-radius:6px;min-width:0;width:100%;resize:none}
 .ccard input:hover{background:var(--soft)}
 .ccard input:focus,.ccard textarea:focus{outline:2px solid var(--focus);outline-offset:1px}
@@ -156,7 +180,8 @@ input,textarea{font:inherit;color:inherit}
 .ccard .tags input{font-weight:700;font-size:17px}
 .ctraits{grid-column:1/-1}
 .ctab{display:inline-block;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:15px;padding:6px 20px 5px;border-radius:12px 12px 0 0}
-.ccard .ctraits textarea{display:block;background:var(--soft);border-radius:0 14px 14px 14px;padding:12px 16px;font-size:14px;line-height:1.85;resize:vertical;min-height:96px;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+.ccard .ctraits .rich:focus{outline:2px solid var(--focus);outline-offset:1px}
+.ccard .ctraits .rich{display:block;background:var(--soft);border-radius:0 14px 14px 14px;padding:12px 16px;font-size:14px;line-height:1.85;resize:vertical;min-height:96px;box-shadow:0 3px 10px rgba(0,0,0,.05)}
 .cfoot{grid-column:1/-1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:-6px}
 .cfoot .sw{width:18px;height:18px}
 .cfoot .lnk{border:0;background:none;padding:0 2px;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
@@ -197,6 +222,7 @@ input,textarea{font:inherit;color:inherit}
   .gutter .when{font-size:14px;padding:6px 10px}
   .etitle{font-size:13px}
   .add-era{grid-template-columns:104px 1fr}
+  .era.wide:not(.empty) .panel{margin-left:26px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -217,9 +243,18 @@ input,textarea{font:inherit;color:inherit}
   </section>
   <main class="board" id="board"></main>
   <div class="add-era"><button class="btn" id="addEraBtn">시점 추가</button></div>
-  <p class="credit">@0_Z3ROo</p>
+  <div class="credit">
+    <input id="commission" placeholder="커미션 크레딧 (예: 커미션 @아이디)" maxlength="60" aria-label="커미션 크레딧">
+    <span class="credit-sep" aria-hidden="true"></span>
+    <span>@0_Z3ROo</span>
+  </div>
 </div>
 
+<div class="rtb" id="rtb" role="toolbar" aria-label="글자 꾸미기">
+  <button type="button" data-fmt="b" title="굵게 (Ctrl+B)"><b>굵게</b></button>
+  <button type="button" data-fmt="h" title="글씨 배경 (Ctrl+H)"><span class="rtb-hl">배경</span></button>
+  <button type="button" data-fmt="x" title="꾸밈 지우기">지우기</button>
+</div>
 <div class="toast" id="toast" role="status"><span id="toastMsg"></span><button id="toastUndo" hidden>되돌리기</button></div>
 <div class="modal" id="helpModal" role="dialog" aria-label="사용법">
   <div class="modal-box text">
@@ -229,6 +264,8 @@ input,textarea{font:inherit;color:inherit}
       <li>왼쪽 타임라인에 <b>시점</b>을 쌓고, 필요한 시점에만 ‘관계도 그리기’로 인물과 관계를 그려요. 관계도가 없는 시점은 글만 넓게 들어가요. ‘복제’로 이전 시점을 이어서 만들 수 있어요.</li>
       <li><b>인물 추가</b>를 누르거나 빈 곳을 두 번 누르면 인물이 생겨요. 끌어서 옮기고, 누르면 이름과 두상(없으면 색)을 정하거나 등장인물 카드에서 불러올 수 있어요.</li>
       <li>인물을 고르고 <b>관계 잇기</b>를 누른 뒤 상대를 누르면 선이 생겨요. 선을 누르면 관계 이름, 설명, 종류, 방향을 정해요.</li>
+      <li>사건, 메모, 특징, 관계 설명은 글자를 드래그한 뒤 위에 뜨는 <b>굵게</b>나 <b>배경</b>을 누르면 꾸밀 수 있어요. 편집 화면에서도 바로 굵게, 배경색으로 보이고 PNG에도 그대로 나와요.</li>
+      <li>맨 아래에 <b>커미션 크레딧</b>을 적을 수 있어요.</li>
       <li><b>디자인</b>에서 출력 색을 바꾸고, <b>PNG로 저장</b>으로 한 장의 이미지로 내보내요.</li>
     </ul>
     <div class="modal-foot"><button class="btn primary" data-close>확인</button></div>
@@ -390,10 +427,247 @@ function equalTabs(row){
   const w = Math.max(...tabs.map(textWidth));
   tabs.forEach(t => t.style.width = w + 'px');
 }
+const plain = t => String(t || '').replace(/\*\*|==/g, '');
+function parseRich(text){
+  const out = []; let b = false, h = false;
+  const s = String(text || '');
+  for (let i = 0; i < s.length; i++){
+    if (s.startsWith('**', i)){ b = !b; i++; continue; }
+    if (s.startsWith('==', i)){ h = !h; i++; continue; }
+    out.push({ch: s[i], b, h});
+  }
+  return out;
+}
+function richWrap(ctx, text, maxW, maxLines, size, base = 400){
+  const fontOf = c => `${c.b ? 700 : base} ${size}px ${SANS}`;
+  const cw = c => { ctx.font = fontOf(c); return ctx.measureText(c.ch).width; };
+  const lines = [];
+  for (const para of String(text || '').split('\n')){
+    let cur = [], w = 0;
+    for (const c of parseRich(para)){
+      const x = cw(c);
+      if (w + x > maxW && cur.length){
+        let sp = -1; for (let k = cur.length - 1; k >= 0 && k > cur.length - 10; k--) if (cur[k].ch === ' '){ sp = k; break; }
+        if (sp > 0){ lines.push(cur.slice(0, sp)); cur = cur.slice(sp + 1); }
+        else { lines.push(cur); cur = []; }
+        w = cur.reduce((a, q) => a + cw(q), 0);
+      }
+      cur.push(c); w += x;
+    }
+    lines.push(cur);
+  }
+  if (lines.length > maxLines){
+    lines.length = maxLines;
+    const last = lines[maxLines - 1];
+    if (last.length) last[last.length - 1] = {...last[last.length - 1], ch: '…'};
+  }
+  return lines;
+}
+function drawRich(ctx, line, x, y, size, base, color, opt = {}){
+  const segs = [];
+  for (const c of line){
+    const s = segs[segs.length - 1];
+    if (s && s.b === c.b && s.h === c.h) s.t += c.ch; else segs.push({t: c.ch, b: c.b, h: c.h});
+  }
+  segs.forEach(s => { ctx.font = `${s.b ? 700 : base} ${size}px ${SANS}`; s.w = ctx.measureText(s.t).width; });
+  const total = segs.reduce((a, s) => a + s.w + (s.h ? 6 : 0), 0);
+  let cx = opt.align === 'center' ? x - total/2 : x;
+  const prevAlign = ctx.textAlign; ctx.textAlign = 'left';
+  for (const s of segs){
+    ctx.font = `${s.b ? 700 : base} ${size}px ${SANS}`;
+    if (s.h){
+      cx += 3;
+      ctx.fillStyle = opt.hl; rrect(ctx, cx - 3, y - size*0.95, s.w + 6, size*1.3, 3); ctx.fill();
+      ctx.fillStyle = opt.onHl; ctx.fillText(s.t, cx, y);
+      cx += 3;
+    } else {
+      if (opt.halo){ ctx.lineJoin = 'round'; ctx.strokeStyle = opt.halo; ctx.lineWidth = 4; ctx.strokeText(s.t, cx, y); }
+      ctx.fillStyle = s.b && opt.boldColor ? opt.boldColor : color; ctx.fillText(s.t, cx, y);
+    }
+    cx += s.w;
+  }
+  ctx.textAlign = prevAlign;
+}
+
+/* formatting toolbar */
+const rtb = document.getElementById('rtb');
+let rtbField = null;
+function placeRtb(el){
+  const r = el.getBoundingClientRect();
+  rtb.classList.add('on');
+  const w = rtb.offsetWidth;
+  rtb.style.left = Math.max(8, Math.min(window.scrollX + r.right - w, window.scrollX + document.documentElement.clientWidth - w - 8)) + 'px';
+  rtb.style.top = (window.scrollY + r.top - rtb.offsetHeight - 6) + 'px';
+}
+document.addEventListener('focusin', e => {
+  const rf = e.target.closest && e.target.closest('[data-rich]');
+  if (rf){ rtbField = rf; placeRtb(rf); }
+  else if (!rtb.contains(e.target)){ rtbField = null; rtb.classList.remove('on'); }
+});
+document.addEventListener('focusout', e => {
+  setTimeout(() => { if (!rtbField || !rtbField.contains(document.activeElement)){ rtb.classList.remove('on'); rtbField = null; } }, 0);
+});
+window.addEventListener('resize', () => { if (rtbField) placeRtb(rtbField); });
+rtb.addEventListener('mousedown', e => e.preventDefault());
+/* ---- contenteditable rich fields: DOM <-> markup ---- */
+function markupToChars(text){
+  const out = [];
+  String(text || '').split('\n').forEach((line, i) => {
+    if (i) out.push({ch:'\n', b:false, h:false});
+    out.push(...parseRich(line));
+  });
+  return out;
+}
+function charsToMarkup(chars){
+  let s = '', b = false, h = false;
+  const close = () => { if (h){ s += '=='; h = false; } if (b){ s += '**'; b = false; } };
+  for (const c of chars){
+    if (c.ch === '\n'){ close(); s += '\n'; continue; }
+    if (b !== c.b || h !== c.h){
+      if (h && !c.h){ s += '=='; h = false; }
+      if (b && !c.b){ if (h){ s += '=='; h = false; } s += '**'; b = false; }
+      if (!b && c.b){ s += '**'; b = true; }
+      if (!h && c.h){ s += '=='; h = true; }
+    }
+    s += c.ch;
+  }
+  close();
+  return s;
+}
+function charsToHTML(chars){
+  let html = '', i = 0;
+  while (i < chars.length){
+    const c = chars[i];
+    if (c.ch === '\n'){ html += '<br>'; i++; continue; }
+    let j = i, t = '';
+    while (j < chars.length && chars[j].ch !== '\n' && chars[j].b === c.b && chars[j].h === c.h){ t += chars[j].ch; j++; }
+    let seg = esc(t);
+    if (c.b) seg = `<b>${seg}</b>`;
+    if (c.h) seg = `<mark>${seg}</mark>`;
+    html += seg; i = j;
+  }
+  if (chars.length && chars[chars.length-1].ch === '\n') html += '<br>';
+  return html;
+}
+const markupToHTML = t => charsToHTML(markupToChars(t));
+function richField(markup, o){
+  return `<div class="rich ${o.cls || ''}" contenteditable="true" role="textbox" aria-multiline="${o.single ? 'false' : 'true'}" data-rich ${o.single ? 'data-single' : ''} ${o.k ? `data-k="${o.k}"` : ''} data-ph="${esc(o.ph || '')}" aria-label="${esc(o.label || '')}">${markupToHTML(markup)}</div>`;
+}
+const BLOCK = /^(DIV|P|LI)$/;
+function readRich(el, range){
+  const out = []; let start = null, end = null;
+  const mark = (node, off) => {
+    if (range){
+      if (node === range.startContainer && off === range.startOffset && start === null) start = out.length;
+      if (node === range.endContainer && off === range.endOffset && end === null) end = out.length;
+    }
+  };
+  const walk = (node, b, h) => {
+    const kids = node.childNodes;
+    for (let i = 0; i < kids.length; i++){
+      mark(node, i);
+      const k = kids[i];
+      if (k.nodeType === 3){
+        const t = k.nodeValue;
+        for (let j = 0; j < t.length; j++){
+          if (range){
+            if (k === range.startContainer && j === range.startOffset && start === null) start = out.length;
+            if (k === range.endContainer && j === range.endOffset && end === null) end = out.length;
+          }
+          out.push({ch: t[j] === '\u00a0' ? ' ' : t[j], b, h});
+        }
+        if (range){
+          if (k === range.startContainer && range.startOffset >= t.length && start === null) start = out.length;
+          if (k === range.endContainer && range.endOffset >= t.length && end === null) end = out.length;
+        }
+      } else if (k.nodeType === 1){
+        if (k.tagName === 'BR'){
+          const isLast = i === kids.length - 1 && node === el;
+          if (!isLast) out.push({ch:'\n', b:false, h:false});
+          continue;
+        }
+        const st = k.style || {};
+        const nb = b || /^(B|STRONG)$/.test(k.tagName) || parseInt(st.fontWeight) >= 600 || st.fontWeight === 'bold';
+        const nh = h || k.tagName === 'MARK' || (st.backgroundColor && !/transparent|rgba\(0, 0, 0, 0\)/.test(st.backgroundColor));
+        if (BLOCK.test(k.tagName) && out.length && out[out.length-1].ch !== '\n') out.push({ch:'\n', b:false, h:false});
+        walk(k, nb, nh);
+      }
+    }
+    mark(node, kids.length);
+  };
+  walk(el, false, false);
+  while (out.length && out[out.length-1].ch === '\n' && el.dataset.single !== undefined) out.pop();
+  return {chars: out, start, end};
+}
+function setCaret(el, s0, s1){
+  const pos = idx => {
+    let n = 0;
+    const find = node => {
+      for (const k of node.childNodes){
+        if (k.nodeType === 3){ if (idx <= n + k.nodeValue.length) return [k, idx - n]; n += k.nodeValue.length; }
+        else if (k.tagName === 'BR'){ if (idx === n) return [node, [...node.childNodes].indexOf(k)]; n += 1; }
+        else { const r = find(k); if (r) return r; }
+      }
+      return null;
+    };
+    return find(el) || [el, el.childNodes.length];
+  };
+  const r = document.createRange();
+  const [a, ao] = pos(s0), [b, bo] = pos(s1);
+  r.setStart(a, ao); r.setEnd(b, bo);
+  const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+}
+function enhanceRich(root){
+  const list = [...root.querySelectorAll('[data-rich]')]; if (root.matches && root.matches('[data-rich]')) list.push(root);
+  list.forEach(el => {
+    if (el._rich) return; el._rich = true;
+    Object.defineProperty(el, 'value', { get(){ return charsToMarkup(readRich(el).chars); }, configurable:true });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter'){ e.preventDefault(); if (el.dataset.single === undefined) document.execCommand('insertLineBreak'); }
+    });
+    el.addEventListener('paste', e => {
+      e.preventDefault();
+      let t = (e.clipboardData || window.clipboardData).getData('text/plain') || '';
+      if (el.dataset.single !== undefined) t = t.replace(/\s*\n\s*/g, ' ');
+      document.execCommand('insertText', false, t);
+    });
+    el.addEventListener('drop', e => e.preventDefault());
+    el.addEventListener('input', () => { if (!el.textContent && !el.querySelector('img')) el.innerHTML = ''; }, true);
+  });
+}
+new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1) enhanceRich(n); }))).observe(document.body, {childList:true, subtree:true});
+function applyFmt(el, fmt){
+  const sel = getSelection();
+  const range = sel.rangeCount && el.contains(sel.getRangeAt(0).commonAncestorContainer) ? sel.getRangeAt(0) : null;
+  const {chars, start, end} = readRich(el, range);
+  let a = start ?? chars.length, b = end ?? a;
+  if (a > b) [a, b] = [b, a];
+  if (fmt === 'x'){
+    const [s0, s1] = a === b ? [0, chars.length] : [a, b];
+    for (let i = s0; i < s1; i++){ chars[i].b = false; chars[i].h = false; }
+  } else {
+    if (a === b){ toast('꾸밀 글자를 먼저 드래그해서 선택해 주세요.'); return; }
+    const key = fmt;
+    const seg = chars.slice(a, b).filter(c => c.ch !== '\n');
+    const on = !seg.every(c => c[key]);
+    for (let i = a; i < b; i++) if (chars[i].ch !== '\n') chars[i][key] = on;
+  }
+  el.innerHTML = charsToHTML(chars);
+  el.focus();
+  setCaret(el, a, b);
+  el.dispatchEvent(new Event('input', {bubbles: true}));
+}
+rtb.addEventListener('click', e => { const f = e.target.closest('[data-fmt]')?.dataset.fmt; if (f && rtbField) applyFmt(rtbField, f); });
+document.addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey) || !e.target.closest || !e.target.closest('[data-rich]')) return;
+  const k = e.key.toLowerCase();
+  if (k === 'b' || k === 'h' || k === 'i' || k === 'u'){ e.preventDefault(); if (k === 'b' || k === 'h') applyFmt(e.target.closest('[data-rich]'), k); }
+});
+
 function applyTheme(){
   const T = state.theme, dark = lum(T.bg) < .45, st = document.documentElement.style;
   const v = {'--bg':T.bg, '--panel':T.card, '--ink':T.text, '--muted':mix(T.text, T.card, .42), '--line':mix(T.text, T.bg, .75),
-    '--edge':mix(T.text, T.card, .88), '--soft':mix(T.card, T.text, dark ? .06 : .045), '--accent':T.accent, '--on-accent': lum(T.accent) > .6 ? '#1A1A1A' : '#FFFFFF'};
+    '--edge':mix(T.text, T.card, .88), '--soft':mix(T.card, T.text, dark ? .06 : .045), '--accent':T.accent, '--on-accent': lum(T.accent) > .6 ? '#1A1A1A' : '#FFFFFF', '--hl':T.hl || T.accent, '--on-hl': T.hlText || (lum(T.hl || T.accent) > .6 ? '#1A1A1A' : '#FFFFFF')};
   Object.entries(v).forEach(([k, x]) => st.setProperty(k, x));
   document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
   const lc = mix(T.bg, T.text, dark ? .10 : .07);
@@ -401,6 +675,7 @@ function applyTheme(){
 }
 function renderAll(){
   applyTheme();
+  $('#commission').value = state.commission || '';
   renderCast();
   board.innerHTML = '';
   if (!state.eras.length){
@@ -409,35 +684,36 @@ function renderAll(){
   }
   state.eras.forEach((era, i) => board.appendChild(buildEra(era, i)));
   board.querySelectorAll('.when').forEach(fitInput);
-  board.querySelectorAll('.era.empty .hrow').forEach(row => { equalTabs(row); row.addEventListener('input', e => { if (e.target.classList.contains('when')) equalTabs(row); }); });
-  board.querySelectorAll('.note').forEach(t => { const g = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }; g(); t.addEventListener('input', g); });
+  board.querySelectorAll('.era.wide .hrow').forEach(row => { equalTabs(row); row.addEventListener('input', e => { if (e.target.classList.contains('when')) equalTabs(row); }); });
+  board.querySelectorAll('textarea.note').forEach(t => { const g = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }; g(); t.addEventListener('input', g); });
 }
 
 function buildEra(era, i){
   const el = document.createElement('section');
-  el.className = 'era' + (era.people.length ? '' : ' empty'); el.dataset.id = era.id;
+  const nSides = (era.sides || []).length;
+  el.className = 'era' + (era.people.length ? '' : ' empty') + (!era.people.length || nSides ? ' wide' : ''); el.dataset.id = era.id;
   el.innerHTML = `
     <div class="gutter">
       <span class="dot" aria-hidden="true"></span>
-      <div class="hrow" style="--cols:${era.people.length ? 1 : 1 + (era.sides || []).length}">
+      <div class="hrow" style="--cols:${1 + nSides}">
         <div class="hcol">
           <input class="when" aria-label="시기" placeholder="시기" value="${esc(era.when)}">
-          <input class="etitle" aria-label="사건" placeholder="사건" value="${esc(era.title)}">
-          <textarea class="note" rows="2" aria-label="메모" placeholder="메모">${esc(era.note)}</textarea>
+          ${richField(era.title, {cls:"etitle", ph:"사건", label:"사건", single:true})}
+          ${richField(era.note, {cls:"note", ph:"메모", label:"메모"})}
         </div>
-        ${era.people.length ? '' : (era.sides || []).map(sd => `
+        ${(era.sides || []).map(sd => `
         <div class="hcol" data-side="${sd.id}">
           <input class="when" data-k="when" aria-label="시기" placeholder="시기" value="${esc(sd.when)}">
-          <input class="etitle" data-k="title" aria-label="사건" placeholder="사건" value="${esc(sd.title)}">
-          <textarea class="note" data-k="note" rows="2" aria-label="메모" placeholder="메모">${esc(sd.note)}</textarea>
+          ${richField(sd.title, {cls:"etitle", k:"title", ph:"사건", label:"사건", single:true})}
+          ${richField(sd.note, {cls:"note", k:"note", ph:"메모", label:"메모"})}
           <button class="side-del" data-sdel="${sd.id}">이 시점 삭제</button>
         </div>`).join('')}
       </div>
       <div class="era-actions">
         <button data-act="up" ${i===0?'hidden':''}>위로</button>
         <button data-act="down" ${i===state.eras.length-1?'hidden':''}>아래로</button>
-        ${(era.sides || []).length ? '' : '<button data-act="draw" class="draw">관계도 그리기</button>'}
-        ${(era.sides || []).length < 3 ? '<button data-act="hadd" class="draw">옆에 시점 추가</button>' : ''}
+        <button data-act="draw" class="draw">관계도 그리기</button>
+        ${nSides < 3 ? '<button data-act="hadd" class="hadd">옆에 시점 추가</button>' : ''}
         <button data-act="dup">복제</button>
         <button data-act="del" class="del">삭제</button>
       </div>
@@ -526,13 +802,13 @@ function renderDiagram(era, el = eraEl(era)){
     let arrows = '';
     if (l.dir==='ab'||l.dir==='both') arrows += `<polygon points="${arrowPts(g.x2,g.y2,g.endDir).join(' ')}" fill="${k.color}"/>`;
     if (l.dir==='ba'||l.dir==='both') arrows += `<polygon points="${arrowPts(g.x1,g.y1,g.startDir).join(' ')}" fill="${k.color}"/>`;
-    const desc = wrapEst(l.desc, 150, 2);
+    const descHTML = (l.desc || '').trim() ? markupToHTML((l.desc || '').replace(/\n/g, ' ')) : '';
     out += `<g class="link" data-id="${l.id}">
       <path d="${d}" stroke="transparent" stroke-width="18" fill="none"/>
       <path d="${d}" stroke="${k.color}" stroke-width="${on ? 3 : 1.5}" fill="none" stroke-dasharray="${k.dash}" stroke-opacity="${on ? 1 : .8}"/>
       ${arrows}
       <text class="svg-lbl" x="${g.lx}" y="${g.ly + 4}" text-anchor="middle" fill="${k.color}">${esc(labelOf(l))}</text>
-      ${desc.map((t, j) => `<text class="svg-desc" x="${g.lx}" y="${g.ly + 19 + j*14}" text-anchor="middle">${esc(t)}</text>`).join('')}
+      ${descHTML ? `<foreignObject x="${g.lx - 85}" y="${g.ly + 10}" width="170" height="34" style="pointer-events:none"><div xmlns="http://www.w3.org/1999/xhtml" class="fo-desc">${descHTML}</div></foreignObject>` : ''}
     </g>`;
   }
   for (const p of era.people){
@@ -546,6 +822,7 @@ function renderDiagram(era, el = eraEl(era)){
         ? `<clipPath id="${cid}"><circle r="${R}"/></clipPath><circle r="${R}" fill="var(--soft)"/><image href="${p.img}" x="${-R}" y="${-R}" width="${2*R}" height="${2*R}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${cid})"/><circle r="${R}" fill="none" stroke="var(--edge)" stroke-width="1"/>`
         : `<circle r="${R}" fill="${p.color}"/><text class="svg-initial" y="6" text-anchor="middle">${esc(initial)}</text>`}
       <text class="svg-name" y="${R+18}" text-anchor="middle">${esc(p.name || '이름 없음')}</text>
+      ${(p.desc || '').trim() ? `<foreignObject x="-62" y="${R+23}" width="124" height="32" style="pointer-events:none"><div xmlns="http://www.w3.org/1999/xhtml" class="fo-desc">${markupToHTML(p.desc.replace(/\n/g, ' '))}</div></foreignObject>` : ''}
     </g>`;
   }
   svg.innerHTML = out;
@@ -560,6 +837,7 @@ function renderInspector(era, el = eraEl(era)){
     if (!p){ sel = null; box.className='inspector'; return; }
     box.innerHTML = `
       <label class="field">이름<input data-k="name" value="${esc(p.name)}" maxlength="20"></label>
+      <label class="field" style="flex:2 1 220px">간단한 설정 <span>(비워도 돼요)</span>${richField(p.desc, {k:"desc", ph:"예: 순사부장", label:"간단한 설정"})}</label>
       <div class="field" style="flex:0 0 auto">두상 이미지<div class="head-row">
         ${p.img ? `<img class="head-prev" src="${p.img}" alt="">` : ''}
         <label class="btn file-btn">${p.img ? '바꾸기' : 'PNG 넣기'}<input type="file" accept="image/png,image/*" aria-label="두상 이미지 선택"></label>
@@ -572,6 +850,7 @@ function renderInspector(era, el = eraEl(era)){
         <button class="btn danger" data-act="del">삭제</button>
       </div>`;
     box.querySelectorAll('input[data-k]').forEach(inp => inp.addEventListener('input', () => { p[inp.dataset.k] = inp.value; save(); renderDiagram(era, el); }));
+    box.querySelector('[data-k="desc"]').addEventListener('input', e => { p.desc = e.target.value; clamp(p); save(); renderDiagram(era, el); });
     box.querySelectorAll('.sw').forEach(b => b.onclick = () => { p.color = b.dataset.c; save(); paintEra(era, el); });
     box.querySelector('input[type=file]').addEventListener('change', async e => {
       const f = e.target.files[0]; if (!f) return;
@@ -594,12 +873,12 @@ function renderInspector(era, el = eraEl(era)){
     const A = era.people.find(x => x.id===l.a), B = era.people.find(x => x.id===l.b);
     box.innerHTML = `
       <label class="field">관계 이름<input data-k="label" value="${esc(l.label)}" maxlength="16" placeholder="${esc(KINDS[l.kind].label)}"></label>
-      <label class="field" style="flex:2 1 240px">관계 설명<textarea data-k="desc" rows="2" maxlength="80" placeholder="예: 축제 무대를 두고 신경전">${esc(l.desc)}</textarea></label>
+      <label class="field" style="flex:2 1 240px">관계 설명${richField(l.desc, {k:"desc", ph:"관계 설명", label:"관계 설명"})}</label>
       <div class="field" style="flex:1 1 100%">종류<div class="chips">${Object.entries(KINDS).map(([k,v]) => `<button class="chip" data-kind="${k}" aria-pressed="${l.kind===k}"><i style="background:${v.color}"></i>${v.label}</button>`).join('')}</div></div>
       <div class="field" style="flex:1 1 100%">방향 <span>(A: ${esc(A?.name)}, B: ${esc(B?.name)})</span><div class="chips">${DIRS.map(([d,t]) => `<button class="chip" data-dir="${d}" aria-pressed="${l.dir===d}">${t}</button>`).join('')}</div></div>
       <div class="ins-actions"><button class="btn danger" data-act="del">관계 삭제</button></div>`;
     box.querySelector('input').addEventListener('input', e => { l.label = e.target.value; save(); renderDiagram(era, el); });
-    box.querySelector('textarea').addEventListener('input', e => { l.desc = e.target.value; save(); renderDiagram(era, el); });
+    box.querySelector('[data-k="desc"]').addEventListener('input', e => { l.desc = e.target.value; save(); renderDiagram(era, el); });
     box.querySelectorAll('[data-kind]').forEach(b => b.onclick = () => { l.kind = b.dataset.kind; save(); paintEra(era, el); });
     box.querySelectorAll('[data-dir]').forEach(b => b.onclick = () => { l.dir = b.dataset.dir; save(); paintEra(era, el); });
     box.querySelector('[data-act="del"]').onclick = () => {
@@ -618,7 +897,7 @@ function freeSpot(era){
   }
   return best;
 }
-function clamp(p){ p.x = Math.max(R+10, Math.min(W-R-10, p.x)); p.y = Math.max(R+10, Math.min(H-R-26, p.y)); }
+function clamp(p){ p.x = Math.max(R+10, Math.min(W-R-10, p.x)); p.y = Math.max(R+10, Math.min(H-R-26-((p.desc || '').trim() ? 30 : 0), p.y)); }
 function addPerson(era, x, y){
   if (x == null) [x, y] = freeSpot(era);
   const p = {id:uid(), name:`인물 ${String.fromCharCode(65 + era.people.length % 26)}`, color: COLORS[era.people.length % COLORS.length], x, y};
@@ -693,7 +972,7 @@ function wireSvg(era, svg){
 }
 
 document.addEventListener('keydown', e => {
-  if (e.target.matches('input, textarea')) return;
+  if (e.target.matches('input, textarea') || e.target.isContentEditable) return;
   if (e.key === 'Escape' && (linking || sel)){ const ids = [linking?.era, sel?.era]; linking = null; sel = null; ids.forEach(id => { const er = id && eraById(id); if (er) paintEra(er); }); }
   if ((e.key === 'Delete' || e.key === 'Backspace') && sel){
     const era = eraById(sel.era); if (!era) return;
@@ -703,6 +982,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
+$('#commission').addEventListener('input', e => { state.commission = e.target.value; save(); });
 $('#addEraBtn').onclick = () => {
   const era = {id:uid(), when:`시점 ${state.eras.length+1}`, title:'사건', note:'메모', people:[], links:[]};
   state.eras.push(era); save(); renderAll();
@@ -732,7 +1012,7 @@ function renderCast(){
       </div>
       <div class="ctraits">
         <span class="ctab">특징</span>
-        <textarea data-k="traits" rows="3" placeholder="한 줄에 하나씩 적어 주세요" maxlength="400" aria-label="특징">${esc(c.traits)}</textarea>
+        ${richField(c.traits, {k:"traits", ph:"한 줄에 하나씩 적어 주세요", label:"특징"})}
       </div>
       <div class="cfoot">
         ${c.img ? '<button class="lnk" data-act="noimg">두상 빼기</button>' : COLORS.map(x => `<button class="sw" data-c="${x}" style="background:${x}" aria-label="색 ${x}" aria-pressed="${c.color===x}"></button>`).join('')}
@@ -781,7 +1061,11 @@ function renderThemeUI(){
   const t = state.theme;
   $('#presets').innerHTML = THEMES.map((p, i) => `<button class="preset" data-i="${i}" aria-pressed="${TKEYS.every(([k]) => p[k].toLowerCase() === (t[k]||'').toLowerCase())}"><span style="background:linear-gradient(135deg, ${p.bg} 50%, ${p.accent} 50%)"></span>${p.name}</button>`).join('');
   $('#colors').innerHTML = TKEYS.map(([k, n]) => `<label>${n}<input type="color" data-k="${k}" value="${t[k]}"></label>`).join('');
-  $('#patRow').innerHTML = `<label class="chk"><input type="checkbox" id="patChk" ${t.pattern ? 'checked' : ''}> 배경에 격자 무늬 넣기</label>`;
+  $('#patRow').innerHTML = `<label class="chk" style="margin-bottom:6px">글씨 배경색 <input type="color" id="hlColor" value="${t.hl || t.accent}" style="width:44px;height:28px;border:1px solid var(--line);border-radius:6px;padding:2px;background:var(--panel)"> <button type="button" class="btn" id="hlReset" style="padding:3px 8px;font-size:12px">포인트 색과 같게</button></label><label class="chk" style="margin-bottom:6px">배경 글씨색 <input type="color" id="hlTextColor" value="${t.hlText || (lum(t.hl || t.accent) > .6 ? '#1A1A1A' : '#FFFFFF')}" style="width:44px;height:28px;border:1px solid var(--line);border-radius:6px;padding:2px;background:var(--panel)"> <button type="button" class="btn" id="hlTextReset" style="padding:3px 8px;font-size:12px">자동</button> <span class="rtb-hl" style="font-size:13px">미리보기</span></label><label class="chk"><input type="checkbox" id="patChk" ${t.pattern ? 'checked' : ''}> 배경에 격자 무늬 넣기</label>`;
+  $('#hlColor').oninput = e => { state.theme.hl = e.target.value; save(); applyTheme(); previewTheme(); };
+  $('#hlReset').onclick = () => { delete state.theme.hl; save(); applyTheme(); renderThemeUI(); previewTheme(); };
+  $('#hlTextColor').oninput = e => { state.theme.hlText = e.target.value; save(); applyTheme(); previewTheme(); };
+  $('#hlTextReset').onclick = () => { delete state.theme.hlText; save(); applyTheme(); renderThemeUI(); previewTheme(); };
   $('#patChk').onchange = e => { state.theme.pattern = e.target.checked; save(); applyTheme(); previewTheme(); };
   $('#presets').querySelectorAll('.preset').forEach(b => b.onclick = () => { const p = THEMES[+b.dataset.i]; TKEYS.forEach(([k]) => state.theme[k] = p[k]); save(); applyTheme(); renderThemeUI(); previewTheme(); });
   $('#colors').querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
@@ -844,7 +1128,7 @@ async function renderPNG(S = 2){
     soft: mix(T.card, T.text, dark ? .06 : .045),
     muted: mix(T.text, T.card, .42), line: mix(T.text, T.bg, .78),
     shadow: dark ? 'rgba(0,0,0,.35)' : 'rgba(20,20,30,.08)', nodeShadow: dark ? 'rgba(0,0,0,.45)' : 'rgba(20,20,30,.20)',
-    onAccent: lum(T.accent) > .6 ? '#1A1A1A' : '#FFFFFF'};
+    onAccent: lum(T.accent) > .6 ? '#1A1A1A' : '#FFFFFF', hl: T.hl || T.accent, onHl: T.hlText || (lum(T.hl || T.accent) > .6 ? '#1A1A1A' : '#FFFFFF')};
   const PAD = 56, GUT = 320, GAP = 30;
   const CW = PAD*2 + GUT + W, FULL = CW - PAD*2;
 
@@ -852,7 +1136,7 @@ async function renderPNG(S = 2){
   const m = document.createElement('canvas').getContext('2d');
   const CCOLS = 2, CGX = 28, colW = (FULL - CGX*(CCOLS-1)) / CCOLS;
   const HR = 54, ROFF = 8 + HR*2 + 22, RW = colW - ROFF;
-  const tagsOf = c => String(c.tags || '').split(/[\s,]+/).map(t => t.replace(/^#+/, '')).filter(Boolean);
+  const tagsOf = c => plain(c.tags).split(/[\s,]+/).map(t => t.replace(/^#+/, '')).filter(Boolean);
   const traitsOf = c => String(c.traits || '').split('\n').map(t => t.trim()).filter(Boolean);
   const layouts = state.cast.map(c => {
     m.font = `700 15px ${SANS}`;
@@ -867,7 +1151,7 @@ async function renderPNG(S = 2){
     const infoH = 46 + (tagLines.length ? tagLines.length*24 + 10 : 0);
     const topH = Math.max(HR*2 + 16, infoH);
     m.font = `400 14px ${SANS}`;
-    const lines = traitsOf(c).flatMap(t => wrap(m, t, colW - 40, 3));
+    const lines = traitsOf(c).flatMap(t => richWrap(m, t, colW - 40, 3, 14, 400));
     const ph = lines.length ? lines.length*24 + 18 : 0;
     return {tagLines, infoH, lines, topH, ph, h: topH + (lines.length ? 16 + 30 + ph : 0)};
   });
@@ -880,23 +1164,24 @@ async function renderPNG(S = 2){
   const TW = GUT - 26 - 30, EW = FULL - 26;
   const HGAP = 28;
   const colLay = (item, tw, maxNote) => {
-    m.font = `700 17px ${SANS}`; const tl = wrap(m, item.title || '', tw, 2).filter(Boolean);
+    const tl = richWrap(m, item.title || '', tw, 2, 17, 700).filter(l => l.length);
     m.font = `400 13px ${SANS}`;
-    const nl = item.note ? wrap(m, item.note, tw, maxNote) : [];
+    const nl = item.note ? richWrap(m, item.note, tw, maxNote, 13, 400) : [];
     const textH = 40 + (tl.length ? 12 + tl.length*25 : 0) + (nl.length ? 8 + nl.length*20 : 0);
     return {item, tl, nl, textH};
   };
   const eraLay = state.eras.map(era => {
-    const full = era.people.length > 0;
-    if (full){
-      m.font = `700 17px ${SANS}`; const tlc = wrap(m, era.title || '', TW, 2).filter(Boolean).length;
+    const full = era.people.length > 0, nS = (era.sides || []).length;
+    if (full && !nS){
+      const tlc = richWrap(m, era.title || '', TW, 2, 17, 700).filter(l => l.length).length;
       const c = colLay(era, TW, Math.max(1, Math.floor((H - 70 - tlc*25 - 4) / 20)));
-      return {full, cols:[c], cw: TW, h: H};
+      return {full, cols:[c], cw: TW, h: H, dOff: 0};
     }
     const items = [era, ...(era.sides || [])], n = items.length;
     const cw = (EW - (n-1)*HGAP) / n;
     const cols = items.map(it => colLay(it, cw, 12));
-    return {full, cols, cw, h: Math.max(44, ...cols.map(c => c.textH))};
+    const rowH = Math.max(44, ...cols.map(c => c.textH));
+    return {full, cols, cw, h: full ? rowH + 20 + H : rowH, dOff: full ? rowH + 20 : 0};
   });
   const tops = []; let acc = TL;
   eraLay.forEach(l => { tops.push(acc); acc += l.h + GAP; });
@@ -946,7 +1231,7 @@ async function renderPNG(S = 2){
     let iy = y + Math.max(0, (L.topH - L.infoH) / 2);
     ctx.textAlign = 'left';
     ctx.font = `700 30px ${SANS}`; ctx.fillStyle = C.ink;
-    ctx.fillText(wrap(ctx, c.name || '이름 없음', RW, 1)[0], RX, iy + 34);
+    ctx.fillText(wrap(ctx, plain(c.name) || '이름 없음', RW, 1)[0], RX, iy + 34);
     iy += 46;
     if (L.tagLines.length){
       ctx.fillStyle = C.accent; ctx.fillRect(RX + 1, iy + 1, 4, L.tagLines.length*24 + 2);
@@ -964,7 +1249,7 @@ async function renderPNG(S = 2){
       ctx.fillStyle = C.onAccent; ctx.fillText('특징', x0 + 18, ty + 21);
       soft(16, 4); panelTL(x0, ty + 30, colW, L.ph, 14); ctx.fillStyle = C.soft; ctx.fill(); noShadow();
       ctx.font = `400 14px ${SANS}`; ctx.fillStyle = C.ink;
-      L.lines.forEach((ln, k) => ctx.fillText(ln, x0 + 20, ty + 30 + 28 + k*24));
+      L.lines.forEach((ln, k) => drawRich(ctx, ln, x0 + 20, ty + 30 + 28 + k*24, 14, 400, C.ink, {hl: C.hl, onHl: C.onHl}));
     }
   });
 
@@ -994,7 +1279,7 @@ async function renderPNG(S = 2){
     ctx.fillStyle = C.accent;
     for (let k = 0; k < L.cols.length - 1; k++) ctx.fillRect(tabX + k*(L.cw + HGAP), top + 18, L.cw + HGAP, 4);
     ctx.font = `700 17px ${SANS}`;
-    const whens = L.cols.map((c, k) => wrap(ctx, c.item.when || (k ? '' : `${i+1}번째 시점`), L.cw - 30, 1)[0] || ' ');
+    const whens = L.cols.map((c, k) => wrap(ctx, plain(c.item.when) || (k ? '' : `${i+1}번째 시점`), L.cw - 30, 1)[0] || ' ');
     const rowW = Math.min(L.cw, Math.max(40, ...whens.map(t => ctx.measureText(t).width + 30)));
     L.cols.forEach((c, k) => {
       const cx = tabX + k*(L.cw + HGAP);
@@ -1005,18 +1290,18 @@ async function renderPNG(S = 2){
       if (L.cols.length > 1){ ctx.textAlign = 'center'; ctx.fillText(when, cx + ww/2, top + 26); ctx.textAlign = 'left'; } else ctx.fillText(when, cx + 15, top + 26);
       let yy = top + 70;
       ctx.font = `700 17px ${SANS}`; ctx.fillStyle = C.ink;
-      for (const ln of c.tl){ ctx.fillText(ln, cx, yy); yy += 25; }
+      for (const ln of c.tl){ drawRich(ctx, ln, cx, yy, 17, 700, C.ink, {hl: C.hl, onHl: C.onHl}); yy += 25; }
       if (c.nl.length){
         if (!c.tl.length) yy -= 4;
         ctx.font = `400 13px ${SANS}`; ctx.fillStyle = C.muted;
-        for (const ln of c.nl){ ctx.fillText(ln, cx, yy); yy += 20; }
+        for (const ln of c.nl){ drawRich(ctx, ln, cx, yy, 13, 400, C.muted, {hl: C.hl, onHl: C.onHl, boldColor: C.ink}); yy += 20; }
       }
     });
     if (!L.full) return;
 
-    const ox = PAD + GUT;
-    soft(); rrect(ctx, ox, top, W, H, 22); ctx.fillStyle = C.soft; ctx.fill(); noShadow();
-    ctx.save(); rrect(ctx, ox, top, W, H, 22); ctx.clip(); ctx.translate(ox, top);
+    const ox = PAD + GUT, dt = top + L.dOff;
+    soft(); rrect(ctx, ox, dt, W, H, 22); ctx.fillStyle = C.soft; ctx.fill(); noShadow();
+    ctx.save(); rrect(ctx, ox, dt, W, H, 22); ctx.clip(); ctx.translate(ox, dt);
     if (!era.people.length){ ctx.textAlign = 'center'; halo('등장인물 없음', `400 14px ${SANS}`, C.muted, W/2, H/2); ctx.textAlign = 'left'; }
     for (const l of era.links){
       const g = geo(era, l); if (!g) continue;
@@ -1038,13 +1323,15 @@ async function renderPNG(S = 2){
       ctx.globalAlpha = dark ? .25 : .12; ctx.fillStyle = k.color; ctx.fill(); ctx.globalAlpha = 1;
       ctx.fillStyle = dark ? mix(k.color, '#FFFFFF', .35) : k.color; ctx.fillText(lbl, g.lx, g.ly + 4);
       ctx.font = `400 11px ${SANS}`;
-      wrap(ctx, (l.desc || '').replace(/\n/g, ' '), 150, 2).filter(Boolean)
-        .forEach((t, j) => halo(t, `400 11px ${SANS}`, C.muted, g.lx, g.ly + 24 + j*14, 4));
+      richWrap(ctx, (l.desc || '').replace(/\n/g, ' '), 150, 2, 11, 400).filter(q => q.length)
+        .forEach((ln, j) => drawRich(ctx, ln, g.lx, g.ly + 24 + j*15, 11, 400, C.muted, {align:'center', halo: C.soft, hl: C.hl, onHl: C.onHl, boldColor: C.ink}));
     }
     for (const p of era.people){
       head(p.x, p.y, R, p.img, p.color, p.name);
       ctx.textAlign = 'center';
       halo(p.name || '이름 없음', `700 13px ${SANS}`, C.ink, p.x, p.y + R + 19, 5);
+      if ((p.desc || '').trim()) richWrap(ctx, p.desc.replace(/\n/g, ' '), 120, 2, 11, 400).filter(q => q.length)
+        .forEach((ln, j) => drawRich(ctx, ln, p.x, p.y + R + 35 + j*15, 11, 400, C.muted, {align:'center', halo: C.soft, hl: C.hl, onHl: C.onHl, boldColor: C.ink}));
     }
     ctx.textAlign = 'left';
     ctx.restore();
@@ -1052,7 +1339,14 @@ async function renderPNG(S = 2){
   // accent bars + credit
   ctx.fillStyle = C.accent; ctx.fillRect(0, 0, CW, 10); ctx.fillRect(0, CH - 10, CW, 10);
   ctx.textAlign = 'right'; ctx.font = `600 13px ${SANS}`; ctx.fillStyle = C.muted;
-  ctx.fillText('@0_Z3ROo', CW - PAD, CH - 34); ctx.textAlign = 'left';
+  ctx.fillText('@0_Z3ROo', CW - PAD, CH - 34);
+  const comm = (state.commission || '').trim();
+  if (comm){
+    const cx = CW - PAD - ctx.measureText('@0_Z3ROo').width - 12;
+    ctx.fillStyle = C.line; ctx.fillRect(cx, CH - 45, 1, 14);
+    ctx.fillStyle = C.muted; ctx.fillText(comm, cx - 12, CH - 34);
+  }
+  ctx.textAlign = 'left';
   return new Promise(res => cv.toBlob(res, 'image/png'));
 }
 function shade(hex, pct){
