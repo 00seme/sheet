@@ -466,7 +466,7 @@ function drawEdgeLabel(c,L,color,th,isSel){
     c.beginPath(); c.roundRect(p.x,p.y,p.w,p.h,L.T.length>1?9:12); c.fill(); c.stroke();
     c.textAlign='center'; c.textBaseline='middle'; c.font=F.label; c.fillStyle=color;
     L.T.forEach((l,i)=>c.fillText(l,L.cx,p.y+L.padY+i*L.lh1+L.lh1/2+0.5)); c.restore(); }
-  if(L.D.length) drawRich(c,L.D,L.x,L.dTop,L.dW,L.lh2,'center',descFont,th.ink,'#FFFFFF');
+  if(L.D.length) drawRich(c,L.D,L.x,L.dTop,L.dW,L.lh2,'center',descFont,th.ink,th.dark?th.bg:'#FFFFFF');
   if(isSel && !L.pill){ c.save(); c.strokeStyle=hexA(color,.5); c.lineWidth=1; c.setLineDash([3,3]); c.strokeRect(L.x-3,L.y-2,L.w+6,L.h+4); c.restore(); }
 }
 function drawLabel(c,L,color,th,isSel){
@@ -590,7 +590,7 @@ function drawScene(c, opt){
     c.save(); c.beginPath(); c.arc(n.x,n.y,R,0,Math.PI*2); c.clip();
     if(im){ const s=Math.max((2*R)/im.naturalWidth,(2*R)/im.naturalHeight); const w=im.naturalWidth*s,h=im.naturalHeight*s; c.drawImage(im,n.x-w/2,n.y-h/2,w,h); }
     else{ c.fillStyle=hexA(n.color,.16); c.fillRect(n.x-R,n.y-R,2*R,2*R);
-      c.fillStyle=n.color; c.font=F.init; c.textAlign='center'; c.textBaseline='middle'; c.fillText(Array.from((n.name||'?').trim())[0]||'?',n.x,n.y+1); }
+      c.fillStyle=th.dark&&lum(n.color)<0.2?mix(n.color,'#FFFFFF',.55):n.color; c.font=F.init; c.textAlign='center'; c.textBaseline='middle'; c.fillText(Array.from((n.name||'?').trim())[0]||'?',n.x,n.y+1); }
     c.restore();
     c.save(); c.beginPath(); c.arc(n.x,n.y,R,0,Math.PI*2); c.strokeStyle=n.color; c.lineWidth=3.5; c.stroke();
     if(isSel||isTarget){ c.beginPath(); c.arc(n.x,n.y,R+7,0,Math.PI*2); c.strokeStyle=accent; c.lineWidth=2; c.setLineDash([5,4]); c.stroke(); }
