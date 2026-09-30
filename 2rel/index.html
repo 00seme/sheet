@@ -55,6 +55,8 @@ aside h2{font-size:18px;font-weight:700;margin:0 0 14px;letter-spacing:-.01em}
 .field{margin-bottom:16px}
 .field label,.field .lbl{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
 .field input[type=text]{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px}
+.field textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;resize:vertical;min-height:60px;line-height:1.5}
+.rte i,.rte em{font-style:italic}
 .rte-bar{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .rte-bar button{border:1px solid var(--line);background:var(--surface);border-radius:6px;width:30px;height:28px;font-weight:800;cursor:pointer}
 .rte-bar button:hover{background:var(--chip)}
@@ -204,8 +206,8 @@ function persist(){
 function isHex(v){ return typeof v==='string' && /^#[0-9a-fA-F]{6}$/.test(v); }
 function num(v,d){ return typeof v==='number' && isFinite(v) ? v : d; }
 function toRuns(v, legacy, legacyBold){
-  if(Array.isArray(v)) return normRuns(v.filter(r=>r&&typeof r.t==='string').map(r=>({t:r.t,b:!!r.b})));
-  if(typeof legacy==='string' && legacy) return [{t:legacy,b:!!legacyBold}];
+  if(Array.isArray(v)) return normRuns(v.filter(r=>r&&typeof r.t==='string').map(r=>({t:r.t,b:!!r.b,i:!!r.i})));
+  if(typeof legacy==='string' && legacy) return [{t:legacy,b:!!legacyBold,i:false}];
   return [];
 }
 function validate(d){
@@ -255,7 +257,7 @@ function getImg(src){
   return im.complete && im.naturalWidth ? im : null;
 }
 function hexA(hex,a){ const h=hex.replace('#',''); const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16); return `rgba(${r},${g},${b},${a})`; }
-function normRuns(runs){ const out=[]; for(const r of runs){ if(!r.t) continue; const l=out[out.length-1]; if(l&&l.b===r.b) l.t+=r.t; else out.push({t:r.t,b:r.b}); } return out; }
+function normRuns(runs){ const out=[]; for(const r of runs){ if(!r.t) continue; const l=out[out.length-1]; if(l&&l.b===!!r.b&&l.i===!!r.i) l.t+=r.t; else out.push({t:r.t,b:!!r.b,i:!!r.i}); } return out; }
 const runsEmpty = runs => !runs || !runs.some(r=>r.t.trim());
 
 /* plain wrap: never truncates */
@@ -278,38 +280,43 @@ function wrap(c, text, maxW){
 }
 function maxLineW(c, lines){ let m=0; for(const l of lines) m=Math.max(m,c.measureText(l).width); return m; }
 /* rich wrap: runs of {t,b} -> lines of segments, never truncates */
-function richLines(c, runs, maxW, fN, fB){
+function fontMaker(px){ return (b,i)=>`${i?'italic ':''}${b?700:400} ${px}px ${FF}`; }
+const descFont = fontMaker(12);
+function richLines(c, runs, maxW, fm){
   const lines=[]; let cur=[], w=0;
-  const meas=(t,b)=>{ c.font=b?fB:fN; return c.measureText(t).width; };
-  const add=(t,b,tw)=>{ const l=cur[cur.length-1]; if(l&&l.b===b) l.t+=t; else cur.push({t,b}); w+=tw; };
+  const meas=(t,b,it)=>{ c.font=fm(b,it); return c.measureText(t).width; };
+  const add=(t,b,it,tw)=>{ const l=cur[cur.length-1]; if(l&&l.b===b&&l.i===it) l.t+=t; else cur.push({t,b,i:it}); w+=tw; };
   const br=()=>{
-    while(cur.length){ const l=cur[cur.length-1]; const tr=l.t.replace(/\s+$/,''); if(tr===l.t) break; w-=meas(l.t.slice(tr.length),l.b); l.t=tr; if(!l.t) cur.pop(); else break; }
+    while(cur.length){ const l=cur[cur.length-1]; const tr=l.t.replace(/\s+$/,''); if(tr===l.t) break; w-=meas(l.t.slice(tr.length),l.b,l.i); l.t=tr; if(!l.t) cur.pop(); else break; }
     lines.push({segs:cur,w:Math.max(0,w)}); cur=[]; w=0;
   };
   for(const r of runs){
+    const b=!!r.b, it=!!r.i;
     for(const part of r.t.split(/(\n)/)){
       if(part==='\n'){ br(); continue; }
       for(const tok of part.split(/(\s+)/)){
         if(!tok) continue;
-        const tw=meas(tok,r.b), ws=/^\s+$/.test(tok);
-        if(w+tw<=maxW){ if(ws && !cur.length) continue; add(tok,r.b,tw); continue; }
+        const tw=meas(tok,b,it), ws=/^\s+$/.test(tok);
+        if(w+tw<=maxW){ if(ws && !cur.length) continue; add(tok,b,it,tw); continue; }
         if(ws){ br(); continue; }
-        if(cur.length && !/\s$/.test(cur[cur.length-1].t)){ /* glued to previous run (e.g. bold part of a word): break by chars */ }
-        else if(cur.length) br();
-        if(w+tw<=maxW){ add(tok,r.b,tw); continue; }
-        if(!cur.length && tw<=maxW){ add(tok,r.b,tw); continue; }
-        for(const ch of Array.from(tok)){ const cw=meas(ch,r.b); if(cur.length && w+cw>maxW) br(); add(ch,r.b,cw); }
+        const glued = cur.length && !/\s$/.test(cur[cur.length-1].t);
+        if(!glued && cur.length) br();
+        if(w+tw<=maxW){ add(tok,b,it,tw); continue; }
+        for(const ch of Array.from(tok)){ const cw=meas(ch,b,it); if(cur.length && w+cw>maxW) br(); add(ch,b,it,cw); }
       }
     }
   }
   br(); return lines;
 }
-function drawRich(c, lines, x, y, width, lh, align, fN, fB, color){
-  c.save(); c.fillStyle=color; c.textAlign='left'; c.textBaseline='middle';
+function drawRich(c, lines, x, y, width, lh, align, fm, color, halo){
+  c.save(); c.textAlign='left'; c.textBaseline='middle'; c.lineJoin='round';
+  const pos=[];
   lines.forEach((ln,i)=>{
     let sx = align==='center'? x+(width-ln.w)/2 : align==='right'? x+width-ln.w : x;
-    for(const s of ln.segs){ c.font=s.b?fB:fN; c.fillText(s.t,sx,y+i*lh+lh/2); sx+=c.measureText(s.t).width; }
+    for(const s of ln.segs){ c.font=fm(s.b,s.i); pos.push([s,sx,y+i*lh+lh/2]); sx+=c.measureText(s.t).width; }
   });
+  if(halo){ c.strokeStyle=halo; c.lineWidth=4; for(const [s,px,py] of pos){ c.font=fm(s.b,s.i); c.strokeText(s.t,px,py); } }
+  c.fillStyle=color; for(const [s,px,py] of pos){ c.font=fm(s.b,s.i); c.fillText(s.t,px,py); }
   c.restore();
 }
 
@@ -429,14 +436,38 @@ function labelLayout(c, title, runs, lw, cx, cy){
   if(lw) inner=Math.max(40,lw-padX*2);
   else{
     c.font=F.label; const a=hasT?c.measureText(title).width:0;
-    const b=hasD? Math.max(...richLines(c,runs,Infinity,F.desc,F.descB).map(l=>l.w)) : 0;
+    const b=hasD? Math.max(...richLines(c,runs,Infinity,descFont).map(l=>l.w)) : 0;
     inner=Math.max(24,Math.min(200,Math.max(a,b)));
   }
   c.font=F.label; const T=hasT? wrap(c,title,inner):[];
-  const D=hasD? richLines(c,runs,inner,F.desc,F.descB):[];
+  const D=hasD? richLines(c,runs,inner,descFont):[];
   if(!lw){ c.font=F.label; let m=maxLineW(c,T); for(const l of D) m=Math.max(m,l.w); inner=Math.max(24,m); }
   const w=inner+padX*2, h=padY*2+T.length*lh1+(T.length&&D.length?gap:0)+D.length*lh2;
   return {x:cx-w/2,y:cy-h/2,w,h,T,D,cx,cy,padX,padY,lh1,lh2,gap,inner,pill:!D.length&&T.length===1};
+}
+function edgeLabelLayout(c, title, runs, lw, cx, cy){
+  const hasT=!!title, hasD=!runsEmpty(runs); if(!hasT&&!hasD) return null;
+  const padX=11, padY=6, lh1=18, lh2=17, gap=5;
+  let tw;
+  if(lw) tw=Math.max(40,lw);
+  else{ c.font=F.label; const a=hasT?c.measureText(title).width+padX*2:0; const b=hasD? Math.max(...richLines(c,runs,Infinity,descFont).map(l=>l.w)) : 0; tw=Math.max(24,Math.min(220,Math.max(a,b))); }
+  c.font=F.label; const T=hasT? wrap(c,title,Math.max(20,tw-padX*2)):[];
+  const D=hasD? richLines(c,runs,tw,descFont):[];
+  const pw = T.length? maxLineW(c,T)+padX*2 : 0, ph = T.length? T.length*lh1+padY*2 : 0;
+  let dw=0; for(const l of D) dw=Math.max(dw,l.w);
+  const W = lw? Math.max(tw,pw) : Math.max(pw,dw);
+  const dh = D.length*lh2, H = ph + (ph&&dh?gap:0) + dh;
+  const top = ph? cy-ph/2 : cy-dh/2;
+  return {x:cx-W/2,y:top,w:W,h:H,cx,cy,T,D,pill:ph?{x:cx-pw/2,y:top,w:pw,h:ph}:null,dTop:top+ph+(ph&&dh?gap:0),dW:W,padY,lh1,lh2};
+}
+function drawEdgeLabel(c,L,color,th,isSel){
+  if(L.pill){ const p=L.pill;
+    c.save(); c.fillStyle=th.label; c.strokeStyle=color; c.lineWidth=isSel?2.5:1.5;
+    c.beginPath(); c.roundRect(p.x,p.y,p.w,p.h,L.T.length>1?9:12); c.fill(); c.stroke();
+    c.textAlign='center'; c.textBaseline='middle'; c.font=F.label; c.fillStyle=color;
+    L.T.forEach((l,i)=>c.fillText(l,L.cx,p.y+L.padY+i*L.lh1+L.lh1/2+0.5)); c.restore(); }
+  if(L.D.length) drawRich(c,L.D,L.x,L.dTop,L.dW,L.lh2,'center',descFont,th.ink,'#FFFFFF');
+  if(isSel && !L.pill){ c.save(); c.strokeStyle=hexA(color,.5); c.lineWidth=1; c.setLineDash([3,3]); c.strokeRect(L.x-3,L.y-2,L.w+6,L.h+4); c.restore(); }
 }
 function drawLabel(c,L,color,th,isSel){
   c.save(); c.fillStyle=th.label; c.strokeStyle=color; c.lineWidth=isSel?2.5:1.5;
@@ -446,13 +477,13 @@ function drawLabel(c,L,color,th,isSel){
   for(const l of L.T){ c.fillText(l,L.cx,y+L.lh1/2+0.5); y+=L.lh1; }
   if(L.T.length&&L.D.length){ c.strokeStyle=hexA(color,.25); c.lineWidth=1; c.beginPath(); c.moveTo(L.x+8,y+L.gap/2); c.lineTo(L.x+L.w-8,y+L.gap/2); c.stroke(); y+=L.gap; }
   c.restore();
-  if(L.D.length) drawRich(c,L.D,L.x+L.padX,y,L.inner,L.lh2,'center',F.desc,F.descB,th.ink);
+  if(L.D.length) drawRich(c,L.D,L.x+L.padX,y,L.inner,L.lh2,'center',descFont,th.ink);
 }
-function textFonts(it){ return [`400 ${it.size}px ${FF}`,`700 ${it.size}px ${FF}`]; }
+
 function textLayout(c,it){
-  const [fN,fB]=textFonts(it), lh=it.size*1.45;
-  const lines=richLines(c,it.runs.length?it.runs:[{t:'',b:false}],Math.max(20,it.w),fN,fB);
-  return {lines,lh,fN,fB,box:{x:it.x,y:it.y,w:it.w,h:Math.max(lh,lines.length*lh)}};
+  const fm=fontMaker(it.size), fN=fm(false,false), lh=it.size*1.45;
+  const lines=richLines(c,it.runs.length?it.runs:[{t:'',b:false,i:false}],Math.max(20,it.w),fm);
+  return {lines,lh,fN,fm,box:{x:it.x,y:it.y,w:it.w,h:Math.max(lh,lines.length*lh)}};
 }
 
 /* ---------- drawing ---------- */
@@ -510,7 +541,7 @@ function drawItem(c,it,opt){
   } else {
     const T=textLayout(c,it), b=T.box;
     if(runsEmpty(it.runs) && opt.handles){ c.save(); c.font=T.fN; c.fillStyle=hexA(it.color,.35); c.textBaseline='middle'; c.textAlign=it.align; const ax=it.align==='center'?b.x+b.w/2:it.align==='right'?b.x+b.w:b.x; c.fillText('글자를 입력하세요',ax,b.y+T.lh/2); c.restore(); }
-    drawRich(c,T.lines,b.x,b.y,b.w,T.lh,it.align,T.fN,T.fB,it.color);
+    drawRich(c,T.lines,b.x,b.y,b.w,T.lh,it.align,T.fm,it.color);
     itemBoxes.set(it.id,b);
     if(isSel && opt.handles){ c.save(); c.strokeStyle=accent; c.lineWidth=1.5/k; c.setLineDash([5/k,4/k]); c.strokeRect(b.x-4/k,b.y-4/k,b.w+8/k,b.h+8/k); c.restore(); drawHandle(c,widthHandlePos(b),accent,'width',k); }
   }
@@ -579,12 +610,12 @@ function drawScene(c, opt){
   for(const e of doc.edges){
     const g=geoms.get(e.id); if(!g) continue; const T={color:e.color};
     let eff={x:e.ox||0,y:e.oy||0};
-    let L=labelLayout(c,e.label,e.runs,e.lw,g.m.x+eff.x,g.m.y+eff.y); if(!L) continue;
+    let L=edgeLabelLayout(c,e.label,e.runs,e.lw,g.m.x+eff.x,g.m.y+eff.y); if(!L) continue;
     if(!e.ox && !e.oy){
       const tips=arrowTips(e,g);
       if(tips.length && tipsHit(L,tips)){
         const dx=g.t.x-g.s.x, dy=g.t.y-g.s.y, len=Math.hypot(dx,dy)||1, nx=-dy/len, ny=dx/len;
-        search: for(let step=1;step<=40;step++){ for(const sg of [-1,1]){ const cand={x:nx*sg*step*6,y:ny*sg*step*6}; const L2=labelLayout(c,e.label,e.runs,e.lw,g.m.x+cand.x,g.m.y+cand.y); if(!tipsHit(L2,tips) && (step>=40 || !boxHitsNodes(L2))){ eff=cand; L=L2; break search; } } }
+        search: for(let step=1;step<=40;step++){ for(const sg of [-1,1]){ const cand={x:nx*sg*step*6,y:ny*sg*step*6}; const L2=edgeLabelLayout(c,e.label,e.runs,e.lw,g.m.x+cand.x,g.m.y+cand.y); if(!tipsHit(L2,tips) && (step>=40 || !boxHitsNodes(L2))){ eff=cand; L=L2; break search; } } }
       }
     }
     const isSel = opt.sel && opt.sel.type==='edge' && opt.sel.id===e.id;
@@ -593,7 +624,7 @@ function drawScene(c, opt){
       c.beginPath(); c.moveTo(g.m.x,g.m.y); c.lineTo(L.cx,L.cy); c.stroke();
       c.fillStyle=T.color; c.beginPath(); c.arc(g.m.x,g.m.y,3,0,Math.PI*2); c.fill(); c.restore();
     }
-    drawLabel(c,L,T.color,th,isSel);
+    drawEdgeLabel(c,L,T.color,th,isSel);
     labelBoxes.set('e:'+e.id,{x:L.x,y:L.y,w:L.w,h:L.h,base:{x:g.m.x,y:g.m.y},eff});
     if(isSel && opt.handles) drawHandle(c,widthHandlePos(L),accent,'width',k);
   }
@@ -906,7 +937,7 @@ function bindText(f,set){
   el.addEventListener('focus',()=>{ snap=snapshot(); });
   el.addEventListener('input',()=>{ set(el.value); changed(); });
   el.addEventListener('blur',()=>{ if(snap && snap!==snapshot()) pushHistory(snap); snap=null; });
-  el.addEventListener('keydown',ev=>{ if(ev.key==='Enter') el.blur(); });
+  if(el.tagName==='INPUT') el.addEventListener('keydown',ev=>{ if(ev.key==='Enter') el.blur(); });
 }
 function bindRange(f,set,fmt){
   const el=panel.querySelector(`[data-f="${f}"]`), out=panel.querySelector(`[data-out="${f}"]`); let snap=null;
@@ -917,43 +948,48 @@ function bindChips(g,set){ panel.querySelectorAll(`[data-g="${g}"] .chip`).forEa
 function chipsHTML(g,label,opts,cur){ return `<div class="field"><span class="lbl">${label}</span><div class="chips" data-g="${g}">${opts.map(([v,l,extra])=>`<button class="chip" data-v="${v}" aria-pressed="${String(cur)===String(v)}">${extra||''}${l}</button>`).join('')}</div></div>`; }
 /* rich text editor */
 function runsToHTML(runs){
-  let h=runs.map(r=>{ const t=esc(r.t).replace(/\n/g,'<br>'); return r.b?`<b>${t}</b>`:t; }).join('');
+  let h=runs.map(r=>{ let t=esc(r.t).replace(/\n/g,'<br>'); if(r.i) t=`<i>${t}</i>`; if(r.b) t=`<b>${t}</b>`; return t; }).join('');
   if(runs.length && runs[runs.length-1].t.endsWith('\n')) h+='<br>';
   return h;
 }
 function parseRte(root){
   const out=[];
-  const push=(t,b)=>{ if(!t) return; const l=out[out.length-1]; if(l&&l.b===b) l.t+=t; else out.push({t,b}); };
+  const push=(t,b,it)=>{ if(!t) return; const l=out[out.length-1]; if(l&&l.b===b&&l.i===it) l.t+=t; else out.push({t,b,i:it}); };
   const endsNL=()=>{ const l=out[out.length-1]; return !l || l.t.endsWith('\n'); };
-  (function walk(nd,b){
+  (function walk(nd,b,it){
     for(const ch of nd.childNodes){
-      if(ch.nodeType===3){ push(ch.nodeValue.replace(/\u00a0/g,' '),b); continue; }
+      if(ch.nodeType===3){ push(ch.nodeValue.replace(/\u00a0/g,' '),b,it); continue; }
       if(ch.nodeType!==1) continue;
-      const tag=ch.tagName; if(tag==='BR'){ push('\n',b); continue; }
-      let bb=b; if(tag==='B'||tag==='STRONG') bb=true;
+      const tag=ch.tagName; if(tag==='BR'){ push('\n',b,it); continue; }
+      let bb=b, ii=it;
+      if(tag==='B'||tag==='STRONG') bb=true;
+      if(tag==='I'||tag==='EM') ii=true;
       const fw=ch.style && ch.style.fontWeight; if(fw) bb = fw==='bold'||fw==='bolder'||(+fw>=600);
-      if(/^(DIV|P|LI)$/.test(tag) && !endsNL()) push('\n',b);
-      walk(ch,bb);
+      const fs=ch.style && ch.style.fontStyle; if(fs) ii = fs==='italic'||fs==='oblique';
+      if(/^(DIV|P|LI)$/.test(tag) && !endsNL()) push('\n',b,it);
+      walk(ch,bb,ii);
     }
-  })(root,false);
+  })(root,false,false);
   const l=out[out.length-1]; if(l && l.t.endsWith('\n')){ l.t=l.t.slice(0,-1); if(!l.t) out.pop(); }
   return out;
 }
 function rteHTML(f,label,runs,ph){
   return `<div class="field"><span class="lbl">${label}</span>
-    <div class="rte-bar"><button type="button" data-bold="${f}" aria-label="고른 글자 굵게" title="굵게 (Ctrl+B)">B</button><span>글자를 드래그해 고른 뒤 B를 누르세요</span></div>
+    <div class="rte-bar"><button type="button" data-fmt="bold" data-for="${f}" aria-label="고른 글자 굵게" title="굵게 (Ctrl+B)">B</button><button type="button" data-fmt="italic" data-for="${f}" aria-label="고른 글자 기울임" title="기울임 (Ctrl+I)" style="font-style:italic;font-weight:600">I</button><span>글자를 드래그해 고른 뒤 누르세요</span></div>
     <div class="rte" contenteditable="true" role="textbox" aria-multiline="true" aria-label="${label}" data-f="${f}" data-ph="${esc(ph)}">${runsToHTML(runs)}</div></div>`;
 }
 function bindRte(f,set){
-  const el=panel.querySelector(`[data-f="${f}"]`), btn=panel.querySelector(`[data-bold="${f}"]`); let snap=null;
+  const el=panel.querySelector(`[data-f="${f}"]`); let snap=null;
   const sync=()=>{ set(parseRte(el)); changed(); };
   el.addEventListener('focus',()=>{ snap=snapshot(); });
   el.addEventListener('blur',()=>{ if(snap && snap!==snapshot()) pushHistory(snap); snap=null; });
   el.addEventListener('input',sync);
   el.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); document.execCommand('insertLineBreak'); } });
   el.addEventListener('paste',ev=>{ ev.preventDefault(); const t=(ev.clipboardData||window.clipboardData).getData('text/plain'); document.execCommand('insertText',false,t); });
-  btn.addEventListener('mousedown',ev=>ev.preventDefault());
-  btn.addEventListener('click',()=>{ const s=getSelection(); if(document.activeElement!==el || !s || s.isCollapsed){ toast('먼저 굵게 할 글자를 드래그해서 고르세요'); el.focus(); return; } document.execCommand('bold'); sync(); });
+  panel.querySelectorAll(`[data-for="${f}"]`).forEach(btn=>{
+    btn.addEventListener('mousedown',ev=>ev.preventDefault());
+    btn.addEventListener('click',()=>{ const s=getSelection(); if(document.activeElement!==el || !s || s.isCollapsed){ toast('먼저 바꿀 글자를 드래그해서 고르세요'); el.focus(); return; } document.execCommand(btn.dataset.fmt); sync(); });
+  });
 }
 
 function renderPanel(){
@@ -1008,7 +1044,7 @@ function renderPanel(){
     panel.innerHTML=`
       <h2>인물</h2>
       <div class="field"><label for="f-name">이름</label><input type="text" id="f-name" data-f="name" value="${esc(n.name)}"></div>
-      <div class="field"><label for="f-sub">설명</label><input type="text" id="f-sub" data-f="sub" value="${esc(n.sub)}" placeholder="예: 주인공, 형사"></div>
+      <div class="field"><label for="f-sub">설명</label><textarea id="f-sub" data-f="sub" rows="2" placeholder="예: 주인공, 형사&#10;Enter로 줄을 바꿀 수 있어요">${esc(n.sub)}</textarea></div>
       ${colorFieldHTML('n',COLORS,n.color,'색상')}
       <div class="field"><span class="lbl">사진</span><div class="photo">
         ${n.photo?`<img src="${n.photo}" alt="">`:''}
